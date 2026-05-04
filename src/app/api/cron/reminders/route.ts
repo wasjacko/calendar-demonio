@@ -1,8 +1,8 @@
-// Vercel Cron — exécuté chaque 5 minutes via vercel.json
-// Envoie les rappels de posts programmés et les rappels personnalisés
+// Vercel Cron — exécuté chaque jour (Hobby tier limit) via vercel.json
+// Envoie les rappels de posts programmés pour les prochaines 24h
 
 import { NextResponse, type NextRequest } from "next/server";
-import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { sendPushToMany } from "@/lib/web-push";
 import { FORMATS, FUNNEL_STAGES } from "@/lib/types";
 
@@ -10,18 +10,13 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 function adminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const secret = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY!;
-  return createServerClient(url, secret, {
-    cookies: {
-      getAll: () => [],
-      setAll: () => {},
-    },
-  });
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 }
 
 export async function GET(request: NextRequest) {
-  // Auth via Bearer token (Vercel Cron header)
   const authHeader = request.headers.get("authorization");
   const expectedToken = process.env.CRON_SECRET;
   if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
@@ -29,97 +24,88 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = adminClient();
+  const ownerId = process.env.NEXT_PUBLIC_OWNER_USER_ID!;
   const now = new Date();
-  const horizonAhead = new Date(now.getTime() + 5 * 60 * 1000);
-  const lookbackStart = new Date(now.getTime() - 60 * 60 * 1000);
+  const horizonAhead = new Date(now.getTime() + 24 * 60 * 60 * 1000);
   let totalSent = 0;
   const results: Record<string, number> = {};
 
-  // 1) Reminders custom dont l'heure approche
+  // 1) Reminders custom dont l'heure est passée
   const { data: reminders } = await supabase
     .from("reminders")
-    .select("id, user_id, post_id, title, body, remind_at, recurrence")
+    .select("id, post_id, title, body, remind_at, recurrence")
+    .eq("user_id", ownerId)
     .eq("sent", false)
-    .lte("remind_at", horizonAhead.toISOString())
-    .gte("remind_at", lookbackStart.toISOString());
+    .lte("remind_at", horizonAhead.toISOString());
 
-  for (const r of reminders ?? []) {
-    const { data: subs } = await supabase
-      .from("push_subscriptions")
-      .select("endpoint, p256dh, auth")
-      .eq("user_id", r.user_id);
-    if (!subs || subs.length === 0) continue;
+  const { data: subs } = await supabase
+    .from("push_subscriptions")
+    .select("endpoint, p256dh, auth")
+    .eq("user_id", ownerId);
 
-    const payload = {
-      title: r.title,
-      body: r.body ?? undefined,
-      tag: `reminder-${r.id}`,
-      requireInteraction: true,
-      data: { url: r.post_id ? `/calendar?post=${r.post_id}` : "/dashboard", reminderId: r.id },
-    };
-    const res = await sendPushToMany(subs, payload);
-    totalSent += res.filter((x) => x.ok).length;
+  if (subs && subs.length > 0) {
+    for (const r of reminders ?? []) {
+      const payload = {
+        title: r.title,
+        body: r.body ?? undefined,
+        tag: `reminder-${r.id}`,
+        requireInteraction: true,
+        data: { url: r.post_id ? `/calendar?post=${r.post_id}` : "/dashboard", reminderId: r.id },
+      };
+      const res = await sendPushToMany(subs, payload);
+      totalSent += res.filter((x) => x.ok).length;
 
-    if (r.recurrence !== "NONE") {
-      const next = computeNextOccurrence(new Date(r.remind_at), r.recurrence);
-      await supabase.from("reminders").update({ remind_at: next.toISOString() }).eq("id", r.id);
-    } else {
-      await supabase.from("reminders").update({ sent: true }).eq("id", r.id);
+      if (r.recurrence !== "NONE") {
+        const next = computeNextOccurrence(new Date(r.remind_at), r.recurrence);
+        await supabase.from("reminders").update({ remind_at: next.toISOString() }).eq("id", r.id);
+      } else {
+        await supabase.from("reminders").update({ sent: true }).eq("id", r.id);
+      }
     }
   }
   results.reminders = (reminders ?? []).length;
 
-  // 2) Posts programmés dans la prochaine heure et notif "post à publier"
-  const oneHourAhead = new Date(now.getTime() + 60 * 60 * 1000);
-  const { data: settingsRows } = await supabase
+  // 2) Posts programmés dans les prochaines 24h (briefing matinal)
+  const { data: settingsRow } = await supabase
     .from("settings")
-    .select("user_id, default_reminder_minutes, notifications_enabled");
-  const settingsByUser = new Map((settingsRows ?? []).map((s) => [s.user_id, s]));
+    .select("notifications_enabled")
+    .eq("user_id", ownerId)
+    .maybeSingle();
 
-  const { data: posts } = await supabase
-    .from("posts")
-    .select("id, user_id, title, scheduled_for, format, funnel_stage, status")
-    .eq("status", "SCHEDULED")
-    .gte("scheduled_for", now.toISOString())
-    .lte("scheduled_for", oneHourAhead.toISOString());
+  if (settingsRow?.notifications_enabled !== false && subs && subs.length > 0) {
+    const { data: posts } = await supabase
+      .from("posts")
+      .select("id, title, scheduled_for, format, funnel_stage")
+      .eq("user_id", ownerId)
+      .eq("status", "SCHEDULED")
+      .gte("scheduled_for", now.toISOString())
+      .lte("scheduled_for", horizonAhead.toISOString())
+      .order("scheduled_for", { ascending: true });
 
-  for (const post of posts ?? []) {
-    const userSettings = settingsByUser.get(post.user_id);
-    if (userSettings && userSettings.notifications_enabled === false) continue;
-    const reminderMin = userSettings?.default_reminder_minutes ?? 60;
-    const dueAt = new Date(new Date(post.scheduled_for!).getTime() - reminderMin * 60 * 1000);
-    if (dueAt > now || dueAt < lookbackStart) continue;
+    if (posts && posts.length > 0) {
+      const list = posts.slice(0, 5).map((p) => {
+        const f = FORMATS[p.format as keyof typeof FORMATS];
+        return `${f.emoji} ${p.title}`;
+      }).join("\n");
 
-    // Anti-doublon : tag unique par post
-    const { data: subs } = await supabase
-      .from("push_subscriptions")
-      .select("endpoint, p256dh, auth")
-      .eq("user_id", post.user_id);
-    if (!subs || subs.length === 0) continue;
-
-    const f = FORMATS[post.format as keyof typeof FORMATS];
-    const stage = FUNNEL_STAGES[post.funnel_stage as keyof typeof FUNNEL_STAGES];
-
-    await sendPushToMany(subs, {
-      title: `${f.emoji} À publier dans ${reminderMin} min`,
-      body: `${post.title} · ${stage.label}`,
-      tag: `post-${post.id}`,
-      requireInteraction: true,
-      actions: [
-        { action: "view", title: "Ouvrir" },
-        { action: "snooze", title: "Snooze 1h" },
-      ],
-      data: { url: `/calendar?post=${post.id}`, postId: post.id },
-    });
-    totalSent += subs.length;
+      await sendPushToMany(subs, {
+        title: `📅 Aujourd'hui : ${posts.length} post${posts.length > 1 ? "s" : ""}`,
+        body: list,
+        tag: `daily-${now.toDateString()}`,
+        requireInteraction: true,
+        data: { url: "/calendar" },
+      });
+      totalSent += subs.length;
+    }
+    results.posts = posts?.length ?? 0;
   }
-  results.posts = (posts ?? []).length;
 
   // 3) Marquer comme MISSED les posts SCHEDULED dont l'heure est passée de + de 2h
   const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
   await supabase
     .from("posts")
     .update({ status: "MISSED" })
+    .eq("user_id", ownerId)
     .eq("status", "SCHEDULED")
     .lt("scheduled_for", twoHoursAgo.toISOString());
 

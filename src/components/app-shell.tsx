@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Calendar,
   LayoutDashboard,
@@ -13,7 +13,6 @@ import {
   Bell,
   Menu,
   X,
-  LogOut,
   Sun,
   Moon,
   Monitor,
@@ -26,12 +25,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { createClient } from "@/lib/supabase/client";
-import { toast } from "sonner";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -41,24 +36,14 @@ const navItems = [
   { href: "/settings", label: "Réglages", icon: Settings },
 ];
 
-export function AppShell({ children, userEmail }: { children: React.ReactNode; userEmail?: string }) {
+export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
   const { sidebarOpen, setSidebarOpen, openEditor } = useUIStore();
   const { theme, setTheme } = useTheme();
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
 
-  const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    toast.success("Déconnecté");
-    router.push("/login");
-    router.refresh();
-  };
-
   return (
     <div className="flex min-h-svh">
-      {/* Sidebar desktop */}
       <aside
         className={cn(
           "hidden md:flex flex-col border-r border-border bg-card transition-[width] duration-200",
@@ -121,7 +106,6 @@ export function AppShell({ children, userEmail }: { children: React.ReactNode; u
         </div>
       </aside>
 
-      {/* Mobile drawer */}
       {mobileNavOpen && (
         <div className="md:hidden fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileNavOpen(false)} />
@@ -161,7 +145,6 @@ export function AppShell({ children, userEmail }: { children: React.ReactNode; u
       )}
 
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Topbar */}
         <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-border bg-background/80 backdrop-blur px-4 md:px-6">
           <button
             className="md:hidden p-2 -ml-2"
@@ -199,32 +182,11 @@ export function AppShell({ children, userEmail }: { children: React.ReactNode; u
             <Button variant="gradient" size="sm" className="hidden md:inline-flex" onClick={() => openEditor()}>
               <Plus className="size-4" /> Nouveau
             </Button>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="ml-1 size-9 rounded-full gradient-brand flex items-center justify-center text-white text-sm font-semibold">
-                  {(userEmail?.[0] ?? "?").toUpperCase()}
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="font-normal">
-                  <p className="text-sm font-medium truncate">{userEmail ?? "Invité"}</p>
-                  <p className="text-xs text-muted-foreground">Compte</p>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild><Link href="/settings"><Settings className="size-4" /> Réglages</Link></DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                  <LogOut className="size-4" /> Déconnexion
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
         </header>
 
         <main className="flex-1 overflow-auto">{children}</main>
 
-        {/* Mobile bottom action bar */}
         <div className="md:hidden sticky bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur">
           <nav className="grid grid-cols-5 gap-1 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
             {navItems.map((item) => {

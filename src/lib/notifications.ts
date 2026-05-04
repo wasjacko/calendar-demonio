@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import { OWNER_USER_ID } from "@/lib/owner";
 import { urlBase64ToUint8Array } from "@/lib/utils";
 
 export async function getNotificationPermission(): Promise<NotificationPermission> {
@@ -27,7 +28,7 @@ export async function subscribeToPush(): Promise<boolean> {
   const registration = await navigator.serviceWorker.ready;
 
   const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-  if (!vapidKey) throw new Error("VAPID public key manquante. Ajoute NEXT_PUBLIC_VAPID_PUBLIC_KEY dans .env.local");
+  if (!vapidKey) throw new Error("VAPID public key manquante");
 
   const existing = await registration.pushManager.getSubscription();
   const applicationServerKey = urlBase64ToUint8Array(vapidKey);
@@ -36,14 +37,10 @@ export async function subscribeToPush(): Promise<boolean> {
     applicationServerKey: applicationServerKey.buffer.slice(applicationServerKey.byteOffset, applicationServerKey.byteOffset + applicationServerKey.byteLength) as ArrayBuffer,
   }));
 
-  // Send to backend
   const json = sub.toJSON();
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Utilisateur non connecté");
-
   await supabase.from("push_subscriptions").upsert({
-    user_id: user.id,
+    user_id: OWNER_USER_ID,
     endpoint: sub.endpoint,
     p256dh: json.keys?.p256dh ?? "",
     auth: json.keys?.auth ?? "",

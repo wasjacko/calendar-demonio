@@ -8,7 +8,9 @@ import { useUIStore, useDataStore } from "@/lib/store";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar as CalendarIcon } from "lucide-react";
 
-export default function CalendarPage() {
+export const dynamic = "force-dynamic";
+
+function CalendarPageInner() {
   const params = useSearchParams();
   const router = useRouter();
   const { openEditor } = useUIStore();
@@ -42,5 +44,13 @@ export default function CalendarPage() {
         <CalendarView />
       )}
     </div>
+  );
+}
+
+export default function CalendarPage() {
+  return (
+    <React.Suspense fallback={<div className="p-6 text-center text-muted-foreground">Chargement…</div>}>
+      <CalendarPageInner />
+    </React.Suspense>
   );
 }

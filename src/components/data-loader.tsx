@@ -3,6 +3,7 @@
 import * as React from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useDataStore } from "@/lib/store";
+import { OWNER_USER_ID } from "@/lib/owner";
 import type { Post, Template } from "@/lib/types";
 
 export function DataLoader({ children }: { children: React.ReactNode }) {
@@ -15,21 +16,26 @@ export function DataLoader({ children }: { children: React.ReactNode }) {
     const load = async () => {
       setLoading(true);
       const [postsRes, templatesRes] = await Promise.all([
-        supabase.from("posts").select("*").order("scheduled_for", { ascending: true, nullsFirst: false }),
-        supabase.from("templates").select("*").order("created_at", { ascending: false }),
+        supabase
+          .from("posts")
+          .select("*")
+          .eq("user_id", OWNER_USER_ID)
+          .order("scheduled_for", { ascending: true, nullsFirst: false }),
+        supabase
+          .from("templates")
+          .select("*")
+          .or(`user_id.eq.${OWNER_USER_ID},is_system.eq.true`)
+          .order("created_at", { ascending: false }),
       ]);
       setPosts((postsRes.data ?? []) as Post[]);
       setTemplates((templatesRes.data ?? []) as Template[]);
       setLoading(false);
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       postsChannel = supabase
         .channel("posts-changes")
         .on(
           "postgres_changes",
-          { event: "*", schema: "public", table: "posts", filter: `user_id=eq.${user.id}` },
+          { event: "*", schema: "public", table: "posts", filter: `user_id=eq.${OWNER_USER_ID}` },
           (payload) => {
             const { posts } = useDataStore.getState();
             if (payload.eventType === "INSERT") {
