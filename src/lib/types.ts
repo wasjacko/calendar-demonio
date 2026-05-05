@@ -11,6 +11,17 @@ export type ContentPillar =
   | "STORYTELLING"
   | "AUTHORITY";
 
+export interface OgData {
+  url: string;
+  title: string | null;
+  description: string | null;
+  image: string | null;
+  site_name: string | null;
+  format: ContentFormat | "OTHER";
+  detected_platform: string;
+  hashtags: string[];
+}
+
 export interface Post {
   id: string;
   user_id: string;
@@ -32,6 +43,8 @@ export interface Post {
   performance: PostPerformance | null;
   template_id: string | null;
   week_number: number | null;
+  source_url: string | null;
+  og_data: OgData | null;
   created_at: string;
   updated_at: string;
 }

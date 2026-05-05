@@ -226,6 +226,34 @@
 .fc-event-mofu { background: var(--mofu) !important; color: var(--mofu-foreground) !important; }
 .fc-event-bofu { background: var(--bofu) !important; color: var(--bofu-foreground) !important; }
 
+.fc .fc-event-with-image {
+  padding: 0 !important;
+  overflow: hidden;
+}
+.fc .fc-event-with-image .fc-event-main {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 6px 2px 2px;
+}
+.fc .fc-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.2);
+}
+.fc .fc-timegrid-event .fc-thumb,
+.fc .fc-daygrid-block-event .fc-thumb {
+  width: 28px;
+  height: 28px;
+}
+.fc .fc-event-with-image .fc-event-time,
+.fc .fc-event-with-image .fc-event-title {
+  font-size: 0.75rem;
+}
+
 .fc-event-status-idea { opacity: 0.6; border: 1px dashed currentColor !important; background: transparent !important; }
 .fc-event-status-draft { opacity: 0.85; }
 .fc-event-status-published { opacity: 1; }

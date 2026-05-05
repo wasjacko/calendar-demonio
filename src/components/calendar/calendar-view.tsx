@@ -46,8 +46,9 @@ export function CalendarView() {
         classNames: [
           `fc-event-${p.funnel_stage.toLowerCase()}`,
           `fc-event-status-${p.status.toLowerCase()}`,
-        ],
-        extendedProps: { post: p },
+          p.visual_url ? "fc-event-with-image" : "",
+        ].filter(Boolean),
+        extendedProps: { post: p, image: p.visual_url },
       }));
   }, [posts, filters]);
 
@@ -103,6 +104,19 @@ export function CalendarView() {
     arg.el.setAttribute("data-funnel", post.funnel_stage);
     arg.el.setAttribute("data-status", post.status);
     arg.el.setAttribute("title", `${FUNNEL_STAGES[post.funnel_stage].label} · ${FORMATS[post.format].label} · ${post.status}`);
+
+    if (post.visual_url) {
+      const titleEl = arg.el.querySelector(".fc-event-title") as HTMLElement | null;
+      if (titleEl && !titleEl.querySelector(".fc-thumb")) {
+        const img = document.createElement("img");
+        img.src = post.visual_url;
+        img.alt = "";
+        img.className = "fc-thumb";
+        img.loading = "lazy";
+        img.onerror = () => img.remove();
+        titleEl.parentElement?.insertBefore(img, titleEl);
+      }
+    }
   };
 
   return (

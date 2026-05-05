@@ -1,12 +1,12 @@
 import { AppShell } from "@/components/app-shell";
 import { DataLoader } from "@/components/data-loader";
-import { PostEditor } from "@/components/post-editor";
+import { QuickAdd } from "@/components/quick-add";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <DataLoader>
       <AppShell>{children}</AppShell>
-      <PostEditor />
+      <QuickAdd />
     </DataLoader>
   );
 }

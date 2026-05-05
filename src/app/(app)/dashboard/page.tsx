@@ -4,23 +4,22 @@ import * as React from "react";
 import Link from "next/link";
 import {
   LayoutDashboard,
-  TrendingUp,
-  CalendarClock,
-  Sparkles,
   ArrowUpRight,
-  Target,
-  Clock,
   Plus,
+  Eye,
+  Heart,
+  MessageCircle,
+  Bookmark,
+  TrendingUp,
+  Calendar as CalendarIcon,
+  Link as LinkIcon,
 } from "lucide-react";
 import { useDataStore, useUIStore } from "@/lib/store";
-import type { Post } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { FUNNEL_STAGES, FORMATS, STATUSES } from "@/lib/types";
-import { addDays, formatRelative, isSameDay, startOfWeek } from "@/lib/utils";
-import { cn } from "@/lib/utils";
+import { FUNNEL_STAGES, FORMATS, STATUSES, type Post } from "@/lib/types";
+import { formatRelative, cn } from "@/lib/utils";
 
 export default function DashboardPage() {
   const { posts, loading } = useDataStore();
@@ -29,18 +28,18 @@ export default function DashboardPage() {
   const stats = React.useMemo(() => computeStats(posts), [posts]);
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6">
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <LayoutDashboard className="size-6" /> Dashboard
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Vue rapide de ton acquisition Instagram → SKOOL
+            Colle une URL Instagram → ajoute au calendrier en 1 clic.
           </p>
         </div>
         <Button variant="gradient" onClick={() => openEditor()}>
-          <Plus className="size-4" /> Nouveau post
+          <Plus className="size-4" /> Nouveau
         </Button>
       </div>
 
@@ -48,124 +47,77 @@ export default function DashboardPage() {
         <Card><CardContent className="p-12 text-center text-muted-foreground">Chargement…</CardContent></Card>
       ) : (
         <>
-          {/* KPIs */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <KpiCard
-              label="Cette semaine"
-              value={stats.thisWeek}
-              total={7}
-              icon={CalendarClock}
-              hint={`${stats.scheduledThisWeek} programmés · ${stats.publishedThisWeek} publiés`}
-            />
-            <KpiCard
-              label="Taux funnel BOFU"
-              value={stats.bofuRatio}
-              suffix="%"
-              icon={Target}
-              hint="Idéal entre 8% et 15%"
-              color={stats.bofuRatio >= 8 && stats.bofuRatio <= 15 ? "status-published" : "status-draft"}
-            />
-            <KpiCard
-              label="8 sem couvertes"
-              value={stats.eightWeekCovered}
-              total={56}
-              icon={TrendingUp}
-              hint={`${Math.round((stats.eightWeekCovered / 56) * 100)}% du plan`}
-            />
-            <KpiCard
-              label="Brouillons"
-              value={stats.drafts}
-              icon={Clock}
-              hint="À finaliser cette semaine"
-              color={stats.drafts > 5 ? "status-draft" : undefined}
-            />
-          </div>
-
-          {/* Funnel breakdown */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Distribution funnel — 30 prochains jours</CardTitle>
-              <CardDescription>Ratio idéal : 60% TOFU · 30% MOFU · 10% BOFU</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <FunnelBar stage="TOFU" count={stats.funnel30.TOFU} total={stats.funnel30.total} />
-              <FunnelBar stage="MOFU" count={stats.funnel30.MOFU} total={stats.funnel30.total} />
-              <FunnelBar stage="BOFU" count={stats.funnel30.BOFU} total={stats.funnel30.total} />
+          {/* Big paste URL prompt — simplest UX */}
+          <Card className="border-primary/30">
+            <CardContent className="p-5">
+              <button
+                onClick={() => openEditor()}
+                className="w-full text-left rounded-lg border-2 border-dashed border-border hover:border-primary/50 p-6 transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="size-12 rounded-lg gradient-brand flex items-center justify-center shrink-0">
+                    <LinkIcon className="size-5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold">Colle une URL Instagram</p>
+                    <p className="text-sm text-muted-foreground">
+                      Reel · Post · Carrousel · Story → on extrait l&apos;image et la caption automatiquement
+                    </p>
+                  </div>
+                  <ArrowUpRight className="size-5 text-muted-foreground group-hover:text-primary" />
+                </div>
+              </button>
             </CardContent>
           </Card>
 
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <MiniStat label="Cette semaine" value={stats.thisWeek} hint={`${stats.publishedThisWeek} publié·s`} />
+            <MiniStat label="À programmer" value={stats.ideas} hint="brouillons + idées" />
+            <MiniStat label="Posts publiés" value={stats.totalPublished} hint="depuis toujours" />
+            <MiniStat label="Vues totales" value={stats.totalViews} hint="cumul publications" />
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Today + Upcoming */}
+            {/* Prochains posts */}
             <Card>
-              <CardHeader className="flex-row items-center justify-between space-y-0">
+              <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
                 <div>
-                  <CardTitle>À venir cette semaine</CardTitle>
-                  <CardDescription>{stats.upcoming.length} post{stats.upcoming.length > 1 ? "s" : ""} programmé{stats.upcoming.length > 1 ? "s" : ""}</CardDescription>
+                  <CardTitle className="text-base">À venir</CardTitle>
+                  <CardDescription>Prochains posts programmés</CardDescription>
                 </div>
                 <Button variant="ghost" size="sm" asChild>
-                  <Link href="/calendar">Voir tout <ArrowUpRight className="size-3.5" /></Link>
+                  <Link href="/calendar">Calendrier <ArrowUpRight className="size-3.5" /></Link>
                 </Button>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-1.5">
                 {stats.upcoming.length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-4 text-center">Rien de prévu. Crée ton premier post 🚀</p>
+                  <p className="text-sm text-muted-foreground py-6 text-center">Aucun post programmé.</p>
                 ) : (
                   stats.upcoming.slice(0, 5).map((p) => (
-                    <button
-                      key={p.id}
-                      onClick={() => openEditor(p.id)}
-                      className="w-full text-left flex items-center gap-3 p-2 rounded-md hover:bg-accent transition-colors"
-                    >
-                      <span className="size-8 rounded-md flex items-center justify-center text-base bg-muted shrink-0">
-                        {FORMATS[p.format].emoji}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{p.title}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatRelative(p.scheduled_for!)} · {STATUSES[p.status].label}
-                        </p>
-                      </div>
-                      <Badge variant={p.funnel_stage.toLowerCase() as never} className="shrink-0 text-[10px]">{p.funnel_stage}</Badge>
-                    </button>
+                    <PostRow key={p.id} post={p} onClick={() => openEditor(p.id)} />
                   ))
                 )}
               </CardContent>
             </Card>
 
-            {/* Quick actions */}
+            {/* Résultats récents */}
             <Card>
-              <CardHeader>
-                <CardTitle>Actions rapides</CardTitle>
-                <CardDescription>Pour avancer ton funnel maintenant</CardDescription>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <TrendingUp className="size-4" /> Résultats récents
+                </CardTitle>
+                <CardDescription>Performance des derniers posts publiés</CardDescription>
               </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-3">
-                <QuickAction
-                  icon={Sparkles}
-                  label="Idée Reel TOFU"
-                  hint="Hook viral, B-roll"
-                  onClick={() => openEditor()}
-                  color="tofu"
-                />
-                <QuickAction
-                  icon={Sparkles}
-                  label="Carrousel MOFU"
-                  hint="Éducation profonde"
-                  onClick={() => openEditor()}
-                  color="mofu"
-                />
-                <QuickAction
-                  icon={Sparkles}
-                  label="Témoignage BOFU"
-                  hint="Conversion SKOOL"
-                  onClick={() => openEditor()}
-                  color="bofu"
-                />
-                <QuickAction
-                  icon={CalendarClock}
-                  label="Voir 8 semaines"
-                  hint="Vue stratégique"
-                  href="/strategy"
-                />
+              <CardContent className="space-y-2">
+                {stats.recentPublished.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-6 text-center">
+                    Aucun post publié avec métriques. Marque tes posts comme &quot;Publié&quot; et saisis les vues/likes pour suivre tes résultats.
+                  </p>
+                ) : (
+                  stats.recentPublished.slice(0, 5).map((p) => (
+                    <ResultRow key={p.id} post={p} onClick={() => openEditor(p.id)} />
+                  ))
+                )}
               </CardContent>
             </Card>
           </div>
@@ -175,124 +127,111 @@ export default function DashboardPage() {
   );
 }
 
-function KpiCard({
-  label,
-  value,
-  total,
-  suffix,
-  icon: Icon,
-  hint,
-  color = "primary",
-}: {
-  label: string;
-  value: number;
-  total?: number;
-  suffix?: string;
-  icon: React.ComponentType<{ className?: string }>;
-  hint?: string;
-  color?: string;
-}) {
+function MiniStat({ label, value, hint }: { label: string; value: number; hint?: string }) {
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-xs text-muted-foreground">{label}</p>
-          <Icon className={cn("size-4", `text-${color}`)} />
-        </div>
-        <p className="text-2xl font-bold">
-          {value}{suffix}
-          {total !== undefined && <span className="text-sm text-muted-foreground font-normal">/{total}</span>}
-        </p>
-        {hint && <p className="text-[11px] text-muted-foreground mt-1 line-clamp-1">{hint}</p>}
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="text-2xl font-bold mt-1">{formatNumber(value)}</p>
+        {hint && <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{hint}</p>}
       </CardContent>
     </Card>
   );
 }
 
-function FunnelBar({ stage, count, total }: { stage: keyof typeof FUNNEL_STAGES; count: number; total: number }) {
-  const pct = total === 0 ? 0 : Math.round((count / total) * 100);
-  const target = Math.round(FUNNEL_STAGES[stage].ratio * 100);
-  const isOnTarget = Math.abs(pct - target) <= 10;
-
+function PostRow({ post, onClick }: { post: Post; onClick: () => void }) {
   return (
-    <div>
-      <div className="flex items-center justify-between mb-1.5">
-        <div className="flex items-center gap-2">
-          <Badge variant={stage.toLowerCase() as never}>{stage}</Badge>
-          <span className="text-sm font-medium">{FUNNEL_STAGES[stage].label}</span>
-        </div>
-        <div className="flex items-center gap-2 text-sm">
-          <span className="font-semibold">{count}</span>
-          <span className="text-muted-foreground">/{total}</span>
-          <Badge variant={isOnTarget ? "published" : "outline"} className="text-[10px]">
-            {pct}% (cible {target}%)
-          </Badge>
-        </div>
+    <button
+      onClick={onClick}
+      className="w-full text-left flex items-center gap-3 p-2 rounded-md hover:bg-accent transition-colors"
+    >
+      {post.visual_url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={post.visual_url} alt="" className="size-10 rounded-md object-cover shrink-0" onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")} />
+      ) : (
+        <span className="size-10 rounded-md flex items-center justify-center text-base bg-muted shrink-0">
+          {FORMATS[post.format].emoji}
+        </span>
+      )}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium truncate">{post.title}</p>
+        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <CalendarIcon className="size-3" />
+          {post.scheduled_for ? formatRelative(post.scheduled_for) : "Non planifié"}
+          <span className="opacity-50">·</span>
+          {STATUSES[post.status].label}
+        </p>
       </div>
-      <Progress value={pct} className="h-2" indicatorClassName={`bg-${FUNNEL_STAGES[stage].color}`} />
-    </div>
+      <Badge variant={post.funnel_stage.toLowerCase() as never} className="shrink-0 text-[10px]">{post.funnel_stage}</Badge>
+    </button>
   );
 }
 
-function QuickAction({
-  icon: Icon,
-  label,
-  hint,
-  onClick,
-  href,
-  color,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  hint: string;
-  onClick?: () => void;
-  href?: string;
-  color?: string;
-}) {
-  const inner = (
-    <div className={cn(
-      "p-3 rounded-lg border border-border hover:bg-accent transition-colors text-left h-full",
-      color && `border-${color}/30`
-    )}>
-      <Icon className={cn("size-4 mb-1.5", color ? `text-${color}` : "text-primary")} />
-      <p className="text-sm font-medium">{label}</p>
-      <p className="text-[11px] text-muted-foreground">{hint}</p>
-    </div>
+function ResultRow({ post, onClick }: { post: Post; onClick: () => void }) {
+  const perf = post.performance ?? {};
+  return (
+    <button
+      onClick={onClick}
+      className="w-full text-left flex items-center gap-3 p-2 rounded-md hover:bg-accent transition-colors"
+    >
+      {post.visual_url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={post.visual_url} alt="" className="size-10 rounded-md object-cover shrink-0" onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")} />
+      ) : (
+        <span className="size-10 rounded-md flex items-center justify-center text-base bg-muted shrink-0">
+          {FORMATS[post.format].emoji}
+        </span>
+      )}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium truncate">{post.title}</p>
+        <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
+          {perf.views !== undefined && <span className="flex items-center gap-0.5"><Eye className="size-3" /> {formatNumber(perf.views)}</span>}
+          {perf.likes !== undefined && <span className="flex items-center gap-0.5"><Heart className="size-3" /> {formatNumber(perf.likes)}</span>}
+          {perf.comments !== undefined && <span className="flex items-center gap-0.5"><MessageCircle className="size-3" /> {formatNumber(perf.comments)}</span>}
+          {perf.saves !== undefined && <span className="flex items-center gap-0.5"><Bookmark className="size-3" /> {formatNumber(perf.saves)}</span>}
+        </div>
+      </div>
+    </button>
   );
-  if (href) return <Link href={href}>{inner}</Link>;
-  return <button onClick={onClick} className="w-full">{inner}</button>;
+}
+
+function formatNumber(n: number | undefined): string {
+  if (n === undefined) return "—";
+  if (n < 1000) return n.toString();
+  if (n < 1_000_000) return (n / 1000).toFixed(n < 10_000 ? 1 : 0) + "k";
+  return (n / 1_000_000).toFixed(1) + "M";
 }
 
 function computeStats(posts: Post[]) {
   const now = new Date();
-  const weekStart = startOfWeek(now);
-  const weekEnd = addDays(weekStart, 7);
-  const horizon30 = addDays(now, 30);
-  const horizon8w = addDays(now, 56);
+  const weekStart = new Date(now);
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
+  weekStart.setHours(0, 0, 0, 0);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 7);
 
-  const thisWeekPosts = posts.filter((p) => p.scheduled_for && new Date(p.scheduled_for) >= weekStart && new Date(p.scheduled_for) < weekEnd);
+  const thisWeek = posts.filter((p) => p.scheduled_for && new Date(p.scheduled_for) >= weekStart && new Date(p.scheduled_for) < weekEnd);
   const upcoming = posts
     .filter((p) => p.scheduled_for && new Date(p.scheduled_for) >= now && p.status !== "PUBLISHED" && p.status !== "MISSED")
     .sort((a, b) => new Date(a.scheduled_for!).getTime() - new Date(b.scheduled_for!).getTime());
 
-  const next30 = posts.filter((p) => p.scheduled_for && new Date(p.scheduled_for) >= now && new Date(p.scheduled_for) < horizon30);
-  const next30Total = next30.length;
+  const recentPublished = posts
+    .filter((p) => p.status === "PUBLISHED")
+    .sort((a, b) => {
+      const aTime = a.published_at ?? a.scheduled_for ?? "";
+      const bTime = b.published_at ?? b.scheduled_for ?? "";
+      return bTime.localeCompare(aTime);
+    });
 
-  const eightWeekCovered = posts.filter((p) => p.scheduled_for && new Date(p.scheduled_for) >= now && new Date(p.scheduled_for) < horizon8w).length;
+  const totalViews = posts.reduce((sum, p) => sum + (p.performance?.views ?? 0), 0);
 
   return {
-    thisWeek: thisWeekPosts.length,
-    scheduledThisWeek: thisWeekPosts.filter((p) => p.status === "SCHEDULED").length,
-    publishedThisWeek: thisWeekPosts.filter((p) => p.status === "PUBLISHED").length,
-    drafts: posts.filter((p) => p.status === "DRAFT").length,
-    eightWeekCovered,
-    bofuRatio: next30Total === 0 ? 0 : Math.round((next30.filter((p) => p.funnel_stage === "BOFU").length / next30Total) * 100),
-    funnel30: {
-      TOFU: next30.filter((p) => p.funnel_stage === "TOFU").length,
-      MOFU: next30.filter((p) => p.funnel_stage === "MOFU").length,
-      BOFU: next30.filter((p) => p.funnel_stage === "BOFU").length,
-      total: next30Total,
-    },
+    thisWeek: thisWeek.length,
+    publishedThisWeek: thisWeek.filter((p) => p.status === "PUBLISHED").length,
+    ideas: posts.filter((p) => p.status === "IDEA" || p.status === "DRAFT").length,
+    totalPublished: posts.filter((p) => p.status === "PUBLISHED").length,
+    totalViews,
     upcoming,
+    recentPublished,
   };
 }
