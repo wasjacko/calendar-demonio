@@ -20,12 +20,14 @@ import { reschedulePost } from "@/lib/posts";
 import { toast } from "sonner";
 import { FORMATS, CONTENT_TYPES } from "@/lib/types";
 import type { Post } from "@/lib/types";
+import { PostPopover } from "./post-popover";
 
 export function CalendarView() {
   const calendarRef = React.useRef<FullCalendar | null>(null);
   const posts = useDataStore((s) => s.posts);
   const upsertPost = useDataStore((s) => s.upsertPost);
   const { viewMode, filters, openEditor } = useUIStore();
+  const [popover, setPopover] = React.useState<{ post: Post; x: number; y: number } | null>(null);
 
   const events: EventInput[] = React.useMemo(() => {
     return posts
@@ -90,7 +92,13 @@ export function CalendarView() {
 
   const handleEventClick = (arg: EventClickArg) => {
     const post = arg.event.extendedProps.post as Post;
-    openEditor(post.id);
+    const rect = (arg.el as HTMLElement).getBoundingClientRect();
+    setPopover({
+      post,
+      x: rect.right + 8,
+      y: rect.top,
+    });
+    arg.jsEvent.preventDefault();
   };
 
   const handleDateSelect = (arg: DateSelectArg) => {
@@ -173,6 +181,14 @@ export function CalendarView() {
           list: "Liste",
         }}
       />
+      {popover && (
+        <PostPopover
+          post={popover.post}
+          position={{ x: popover.x, y: popover.y }}
+          onClose={() => setPopover(null)}
+          onEdit={() => openEditor(popover.post.id)}
+        />
+      )}
     </div>
   );
 }

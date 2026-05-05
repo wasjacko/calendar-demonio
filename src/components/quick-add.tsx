@@ -15,7 +15,9 @@ import {
   TrendingUp,
   Send,
   Trash2,
+  ExternalLink,
 } from "lucide-react";
+import { CopyButton } from "@/components/copy-button";
 import {
   Dialog,
   DialogContent,
@@ -298,62 +300,102 @@ export function QuickAdd() {
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
-            {/* URL field */}
+            {/* URL field with inline actions */}
             <div className="space-y-1.5">
               <Label htmlFor="url" className="flex items-center gap-1.5">
                 <LinkIcon className="size-3.5" /> URL Instagram (référence ou ta vidéo publiée)
               </Label>
-              <div className="relative">
-                <Input
-                  id="url"
-                  type="url"
-                  placeholder="Colle l'URL : reel d'inspi ou ta vidéo une fois publiée"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  onPaste={handleUrlPaste}
-                  onBlur={handleUrlBlur}
-                  className="pr-20"
-                  autoFocus={!post}
-                />
-                {loadingPreview && (
-                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-4 animate-spin text-muted-foreground" />
-                )}
+              <div className="flex gap-1.5">
+                <div className="relative flex-1">
+                  <Input
+                    id="url"
+                    type="url"
+                    placeholder="Colle l'URL : reel d'inspi ou ta vidéo une fois publiée"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    onPaste={handleUrlPaste}
+                    onBlur={handleUrlBlur}
+                    autoFocus={!post}
+                  />
+                  {loadingPreview && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-4 animate-spin text-muted-foreground" />
+                  )}
+                </div>
                 {url && !loadingPreview && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-2"
-                    onClick={() => fetchPreview(url)}
-                  >
-                    <Sparkles className="size-3" /> Analyser
-                  </Button>
+                  <>
+                    <CopyButton value={url} className="shrink-0 border border-border h-10 px-3" size="md" />
+                    <Button
+                      type="button"
+                      size="default"
+                      variant="outline"
+                      className="shrink-0 px-3"
+                      asChild
+                    >
+                      <a href={url} target="_blank" rel="noopener noreferrer" title="Ouvrir dans un nouvel onglet">
+                        <ExternalLink className="size-4" />
+                      </a>
+                    </Button>
+                    <Button
+                      type="button"
+                      size="default"
+                      variant="outline"
+                      className="shrink-0 px-3"
+                      onClick={() => fetchPreview(url)}
+                      title="Re-analyser l'URL"
+                    >
+                      <Sparkles className="size-4" />
+                    </Button>
+                  </>
                 )}
               </div>
+              {url && (
+                <p className="text-[11px] text-muted-foreground truncate">{url}</p>
+              )}
             </div>
 
             {/* Preview */}
             {preview && (
               <div className="rounded-lg border border-border overflow-hidden bg-muted/20">
                 {preview.image && (
-                  <div className="relative aspect-[1.91/1] w-full bg-muted">
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative block aspect-[4/5] sm:aspect-[1.91/1] w-full bg-muted group/preview cursor-pointer"
+                    title="Ouvrir dans Instagram"
+                  >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={preview.image}
                       alt={preview.title ?? ""}
-                      className="absolute inset-0 size-full object-cover"
+                      className="absolute inset-0 size-full object-cover transition-transform group-hover/preview:scale-[1.02]"
                       onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                     />
+                    <div className="absolute inset-0 bg-black/0 group-hover/preview:bg-black/20 transition-colors flex items-center justify-center">
+                      <div className="opacity-0 group-hover/preview:opacity-100 transition-opacity bg-white/90 text-black px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5">
+                        <ExternalLink className="size-3.5" /> Ouvrir
+                      </div>
+                    </div>
                     <Badge className={cn("absolute top-2 left-2", `bg-${CONTENT_TYPES[contentType].color}`, "text-white")}>
                       {FORMATS[format].emoji} {FORMATS[format].label}
                     </Badge>
-                  </div>
+                    {preview.site_name && (
+                      <Badge variant="secondary" className="absolute top-2 right-2 text-[10px]">
+                        {preview.site_name}
+                      </Badge>
+                    )}
+                  </a>
                 )}
                 <div className="p-3 space-y-1">
-                  {preview.title && <p className="font-medium text-sm line-clamp-1">{preview.title}</p>}
-                  {preview.description && (
-                    <p className="text-xs text-muted-foreground line-clamp-3">{preview.description}</p>
-                  )}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      {preview.title && <p className="font-medium text-sm line-clamp-1">{preview.title}</p>}
+                      {preview.description && (
+                        <p className="text-xs text-muted-foreground line-clamp-3 mt-0.5">{preview.description}</p>
+                      )}
+                    </div>
+                    <CopyButton value={url} label="URL" className="shrink-0 text-[10px]" size="xs" />
+                  </div>
                 </div>
               </div>
             )}

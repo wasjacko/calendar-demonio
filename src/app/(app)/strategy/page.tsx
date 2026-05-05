@@ -7,12 +7,13 @@ import {
   Plus,
   Target,
   Sparkles,
-  TrendingUp,
   Eye,
   Heart,
   MessageCircle,
   Bookmark,
+  ExternalLink,
 } from "lucide-react";
+import { CopyButton } from "@/components/copy-button";
 import { useDataStore, useUIStore } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -246,57 +247,73 @@ function SlotCell({
   const totalEngagement = (perf.likes ?? 0) + (perf.comments ?? 0) + (perf.saves ?? 0);
 
   return (
-    <button
-      onClick={onEdit}
+    <div
       className={cn(
-        "text-left rounded-lg overflow-hidden border border-border hover:ring-2 hover:ring-primary transition-all min-h-[120px] flex flex-col",
+        "relative rounded-lg overflow-hidden border border-border hover:ring-2 hover:ring-primary transition-all min-h-[120px] flex flex-col group",
         post.status === "PUBLISHED" && "border-status-published/40"
       )}
     >
-      {post.visual_url ? (
-        <div className="relative aspect-square bg-muted">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={post.visual_url}
-            alt=""
-            className="absolute inset-0 size-full object-cover"
-            onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")}
-          />
-          <Badge className={cn("absolute top-1 left-1 text-[9px]", `bg-${typeInfo.color} text-white`)}>
-            {typeInfo.emoji}
-          </Badge>
-          <Badge variant={post.status.toLowerCase() as never} className="absolute top-1 right-1 text-[9px]">
-            {STATUSES[post.status].label}
-          </Badge>
-        </div>
-      ) : (
-        <div className={cn("aspect-square flex items-center justify-center bg-muted/30", `text-${typeInfo.color}`)}>
-          <span className="text-3xl">{FORMATS[post.format].emoji}</span>
-        </div>
-      )}
-      <div className="p-2 flex-1 flex flex-col">
-        <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-bold">
-          {slotInfo.shortLabel}
-        </p>
-        <p className="text-xs font-medium line-clamp-2 mt-0.5">{post.title}</p>
-        {post.status === "PUBLISHED" && (perf.views || totalEngagement > 0) && (
-          <div className="mt-auto pt-2 flex items-center gap-2 text-[10px] text-muted-foreground">
-            {perf.views !== undefined && (
-              <span className="flex items-center gap-0.5"><Eye className="size-2.5" /> {formatNumber(perf.views)}</span>
-            )}
-            {perf.likes !== undefined && (
-              <span className="flex items-center gap-0.5"><Heart className="size-2.5" /> {formatNumber(perf.likes)}</span>
-            )}
-            {perf.comments !== undefined && (
-              <span className="flex items-center gap-0.5"><MessageCircle className="size-2.5" /> {formatNumber(perf.comments)}</span>
-            )}
-            {perf.saves !== undefined && (
-              <span className="flex items-center gap-0.5"><Bookmark className="size-2.5" /> {formatNumber(perf.saves)}</span>
-            )}
+      <button onClick={onEdit} className="text-left flex-1 flex flex-col">
+        {post.visual_url ? (
+          <div className="relative aspect-square bg-muted">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={post.visual_url}
+              alt=""
+              className="absolute inset-0 size-full object-cover"
+              onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")}
+            />
+            <Badge className={cn("absolute top-1 left-1 text-[9px]", `bg-${typeInfo.color} text-white`)}>
+              {typeInfo.emoji}
+            </Badge>
+            <Badge variant={post.status.toLowerCase() as never} className="absolute top-1 right-1 text-[9px]">
+              {STATUSES[post.status].label}
+            </Badge>
+          </div>
+        ) : (
+          <div className={cn("aspect-square flex items-center justify-center bg-muted/30", `text-${typeInfo.color}`)}>
+            <span className="text-3xl">{FORMATS[post.format].emoji}</span>
           </div>
         )}
-      </div>
-    </button>
+        <div className="p-2 flex-1 flex flex-col">
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-bold">
+            {slotInfo.shortLabel}
+          </p>
+          <p className="text-xs font-medium line-clamp-2 mt-0.5">{post.title}</p>
+          {post.status === "PUBLISHED" && (perf.views || totalEngagement > 0) && (
+            <div className="mt-auto pt-2 flex items-center gap-2 text-[10px] text-muted-foreground">
+              {perf.views !== undefined && (
+                <span className="flex items-center gap-0.5"><Eye className="size-2.5" /> {formatNumber(perf.views)}</span>
+              )}
+              {perf.likes !== undefined && (
+                <span className="flex items-center gap-0.5"><Heart className="size-2.5" /> {formatNumber(perf.likes)}</span>
+              )}
+              {perf.comments !== undefined && (
+                <span className="flex items-center gap-0.5"><MessageCircle className="size-2.5" /> {formatNumber(perf.comments)}</span>
+              )}
+              {perf.saves !== undefined && (
+                <span className="flex items-center gap-0.5"><Bookmark className="size-2.5" /> {formatNumber(perf.saves)}</span>
+              )}
+            </div>
+          )}
+        </div>
+      </button>
+      {post.source_url && (
+        <div className="absolute bottom-1 right-1 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+          <CopyButton value={post.source_url} className="bg-background/90 backdrop-blur-sm rounded shadow-sm" size="xs" />
+          <a
+            href={post.source_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="bg-background/90 backdrop-blur-sm rounded shadow-sm p-1 text-muted-foreground hover:text-foreground"
+            title="Ouvrir l'URL"
+          >
+            <ExternalLink className="size-3" />
+          </a>
+        </div>
+      )}
+    </div>
   );
 }
 

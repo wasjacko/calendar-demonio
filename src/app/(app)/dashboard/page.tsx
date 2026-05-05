@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { CopyButton } from "@/components/copy-button";
 import {
   CONTENT_TYPES,
   FORMATS,
@@ -194,61 +195,71 @@ function MiniStat({ label, value, hint }: { label: string; value: number; hint?:
 
 function PostRow({ post, onClick }: { post: Post; onClick: () => void }) {
   return (
-    <button
-      onClick={onClick}
-      className="w-full text-left flex items-center gap-3 p-2 rounded-md hover:bg-accent transition-colors"
-    >
-      {post.visual_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={post.visual_url} alt="" className="size-10 rounded-md object-cover shrink-0" onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")} />
-      ) : (
-        <span className="size-10 rounded-md flex items-center justify-center text-base bg-muted shrink-0">
-          {FORMATS[post.format].emoji}
-        </span>
+    <div className="w-full flex items-center gap-2 p-2 rounded-md hover:bg-accent transition-colors group">
+      <button onClick={onClick} className="flex items-center gap-3 flex-1 min-w-0 text-left">
+        {post.visual_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={post.visual_url} alt="" className="size-10 rounded-md object-cover shrink-0" onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")} />
+        ) : (
+          <span className="size-10 rounded-md flex items-center justify-center text-base bg-muted shrink-0">
+            {FORMATS[post.format].emoji}
+          </span>
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium truncate">{post.title}</p>
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <CalendarIcon className="size-3" />
+            {post.scheduled_for ? formatRelative(post.scheduled_for) : "Non planifié"}
+            <span className="opacity-50">·</span>
+            {STATUSES[post.status].label}
+          </p>
+        </div>
+        {post.content_type && (
+          <Badge variant={post.content_type.toLowerCase() as never} className="shrink-0 text-[10px]">
+            {CONTENT_TYPES[post.content_type].emoji}
+          </Badge>
+        )}
+      </button>
+      {post.source_url && (
+        <CopyButton
+          value={post.source_url}
+          className="shrink-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+        />
       )}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{post.title}</p>
-        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-          <CalendarIcon className="size-3" />
-          {post.scheduled_for ? formatRelative(post.scheduled_for) : "Non planifié"}
-          <span className="opacity-50">·</span>
-          {STATUSES[post.status].label}
-        </p>
-      </div>
-      {post.content_type && (
-        <Badge variant={post.content_type.toLowerCase() as never} className="shrink-0 text-[10px]">
-          {CONTENT_TYPES[post.content_type].emoji}
-        </Badge>
-      )}
-    </button>
+    </div>
   );
 }
 
 function ResultRow({ post, onClick }: { post: Post; onClick: () => void }) {
   const perf = post.performance ?? {};
   return (
-    <button
-      onClick={onClick}
-      className="w-full text-left flex items-center gap-3 p-2 rounded-md hover:bg-accent transition-colors"
-    >
-      {post.visual_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={post.visual_url} alt="" className="size-10 rounded-md object-cover shrink-0" onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")} />
-      ) : (
-        <span className="size-10 rounded-md flex items-center justify-center text-base bg-muted shrink-0">
-          {FORMATS[post.format].emoji}
-        </span>
-      )}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{post.title}</p>
-        <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
-          {perf.views !== undefined && <span className="flex items-center gap-0.5"><Eye className="size-3" /> {formatNumber(perf.views)}</span>}
-          {perf.likes !== undefined && <span className="flex items-center gap-0.5"><Heart className="size-3" /> {formatNumber(perf.likes)}</span>}
-          {perf.comments !== undefined && <span className="flex items-center gap-0.5"><MessageCircle className="size-3" /> {formatNumber(perf.comments)}</span>}
-          {perf.saves !== undefined && <span className="flex items-center gap-0.5"><Bookmark className="size-3" /> {formatNumber(perf.saves)}</span>}
+    <div className="w-full flex items-center gap-2 p-2 rounded-md hover:bg-accent transition-colors group">
+      <button onClick={onClick} className="flex items-center gap-3 flex-1 min-w-0 text-left">
+        {post.visual_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={post.visual_url} alt="" className="size-10 rounded-md object-cover shrink-0" onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")} />
+        ) : (
+          <span className="size-10 rounded-md flex items-center justify-center text-base bg-muted shrink-0">
+            {FORMATS[post.format].emoji}
+          </span>
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium truncate">{post.title}</p>
+          <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
+            {perf.views !== undefined && <span className="flex items-center gap-0.5"><Eye className="size-3" /> {formatNumber(perf.views)}</span>}
+            {perf.likes !== undefined && <span className="flex items-center gap-0.5"><Heart className="size-3" /> {formatNumber(perf.likes)}</span>}
+            {perf.comments !== undefined && <span className="flex items-center gap-0.5"><MessageCircle className="size-3" /> {formatNumber(perf.comments)}</span>}
+            {perf.saves !== undefined && <span className="flex items-center gap-0.5"><Bookmark className="size-3" /> {formatNumber(perf.saves)}</span>}
+          </div>
         </div>
-      </div>
-    </button>
+      </button>
+      {post.source_url && (
+        <CopyButton
+          value={post.source_url}
+          className="shrink-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+        />
+      )}
+    </div>
   );
 }
 
