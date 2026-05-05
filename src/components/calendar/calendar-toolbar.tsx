@@ -79,7 +79,7 @@ export function CalendarToolbar() {
                       : "border-border hover:bg-accent"
                   )}
                 >
-                  {CONTENT_TYPES[t].emoji} {CONTENT_TYPES[t].label}
+                  {CONTENT_TYPES[t].label}
                 </button>
               ))}
             </div>

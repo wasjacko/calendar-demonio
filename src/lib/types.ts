@@ -84,49 +84,23 @@ export interface Reminder {
   created_at: string;
 }
 
+// Pas d'emoji — juste label + couleur. Les composants UI utilisent des icônes Lucide.
 export const CONTENT_TYPES: Record<ContentType, {
   label: string;
-  description: string;
-  role: string;
   color: string;
-  emoji: string;
 }> = {
-  EXPERT: {
-    label: "Expertise",
-    description: "Tu prouves que tu maîtrises ton domaine",
-    role: "TRUST — établit ta crédibilité",
-    color: "expert",
-    emoji: "🧠",
-  },
-  AUDIENCE: {
-    label: "Audience",
-    description: "Tu attires de nouveaux yeux via la viralité",
-    role: "REACH — fait grossir le compte",
-    color: "audience",
-    emoji: "📡",
-  },
-  ATTACHEMENT: {
-    label: "Attachement",
-    description: "Tu crées du lien émotionnel — story, opinion, fun",
-    role: "BOND — convertit followers en fans",
-    color: "attachement",
-    emoji: "❤️",
-  },
-  VALEUR: {
-    label: "Valeur",
-    description: "Tu donnes du gratuit qui aurait pu être payant",
-    role: "GIFT — déclenche la réciprocité, prépare l'achat",
-    color: "valeur",
-    emoji: "🎁",
-  },
+  EXPERT: { label: "Expert", color: "expert" },
+  AUDIENCE: { label: "Audience", color: "audience" },
+  ATTACHEMENT: { label: "Attachement", color: "attachement" },
+  VALEUR: { label: "Valeur", color: "valeur" },
 };
 
-export const FORMATS: Record<ContentFormat, { label: string; emoji: string; description: string }> = {
-  REEL: { label: "Reel", emoji: "🎬", description: "Vidéo verticale, viralité++" },
-  POST: { label: "Post", emoji: "🖼️", description: "Image unique" },
-  CAROUSEL: { label: "Carrousel", emoji: "📚", description: "10 slides max, éducation profonde" },
-  STORY: { label: "Story", emoji: "⚡", description: "24h, intimité & engagement" },
-  LIVE: { label: "Live", emoji: "🔴", description: "Direct, autorité & communauté" },
+export const FORMATS: Record<ContentFormat, { label: string }> = {
+  REEL: { label: "Reel" },
+  POST: { label: "Post" },
+  CAROUSEL: { label: "Carrousel" },
+  STORY: { label: "Story" },
+  LIVE: { label: "Live" },
 };
 
 export const STATUSES: Record<ContentStatus, { label: string; color: string }> = {
@@ -140,69 +114,55 @@ export const STATUSES: Record<ContentStatus, { label: string; color: string }> =
 export const WEEK_SLOTS: Record<WeekSlot, {
   label: string;
   shortLabel: string;
-  dayIdx: 0 | 1 | 2 | 4 | 6; // 0=Sun, 1=Mon, 2=Tue, 4=Thu, 6=Sat
+  dayIdx: number; // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 5=Fri
   hour: number;
   minute: number;
 }> = {
   MON_0631: { label: "Lundi 06:31", shortLabel: "Lun 06:31", dayIdx: 1, hour: 6, minute: 31 },
   TUE_1104: { label: "Mardi 11:04", shortLabel: "Mar 11:04", dayIdx: 2, hour: 11, minute: 4 },
-  WED_1217: { label: "Mercredi 12:17", shortLabel: "Mer 12:17", dayIdx: 3 as never, hour: 12, minute: 17 },
-  FRI_1600: { label: "Vendredi 16:00", shortLabel: "Ven 16:00", dayIdx: 5 as never, hour: 16, minute: 0 },
+  WED_1217: { label: "Mercredi 12:17", shortLabel: "Mer 12:17", dayIdx: 3, hour: 12, minute: 17 },
+  FRI_1600: { label: "Vendredi 16:00", shortLabel: "Ven 16:00", dayIdx: 5, hour: 16, minute: 0 },
   SUN_0500: { label: "Dimanche 05:00", shortLabel: "Dim 05:00", dayIdx: 0, hour: 5, minute: 0 },
 };
 
 export const WEEK_SLOTS_ORDER: WeekSlot[] = ["MON_0631", "TUE_1104", "WED_1217", "FRI_1600", "SUN_0500"];
 
-// Pattern Bara : chaque slot d'une salve a un type de contenu attendu
-export const SALVE_PATTERNS: Record<1 | 2 | 3, Record<WeekSlot, {
-  type: ContentType;
-  concept: string;
-  inspi: string;
-}>> = {
+// Pattern Bara : type recommandé pour chaque slot d'une salve
+export const SALVE_PATTERNS: Record<1 | 2 | 3, Record<WeekSlot, ContentType>> = {
   1: {
-    MON_0631: { type: "ATTACHEMENT", concept: "Personal branding clivant", inspi: "Boom phonk style" },
-    TUE_1104: { type: "EXPERT", concept: "Tip technique actionnable", inspi: "Tutoriel cool" },
-    WED_1217: { type: "ATTACHEMENT", concept: "Avis clivant comparatif", inspi: "Samx, Gin" },
-    FRI_1600: { type: "AUDIENCE", concept: "B-Roll cinématique", inspi: "Ioannis, sebastiangohan" },
-    SUN_0500: { type: "ATTACHEMENT", concept: "Story évolution", inspi: "Outfit of ze night" },
+    MON_0631: "ATTACHEMENT",
+    TUE_1104: "EXPERT",
+    WED_1217: "ATTACHEMENT",
+    FRI_1600: "AUDIENCE",
+    SUN_0500: "ATTACHEMENT",
   },
   2: {
-    MON_0631: { type: "AUDIENCE", concept: "BOOM (format viral)", inspi: "Hook visuel rapide" },
-    TUE_1104: { type: "EXPERT", concept: "Knowledge dévoilé / méthode", inspi: "sebastiangohan" },
-    WED_1217: { type: "ATTACHEMENT", concept: "Avis clivant comparatif", inspi: "Samx, Gin" },
-    FRI_1600: { type: "AUDIENCE", concept: "B-Roll cinématique", inspi: "Ioannis, sebastiangohan" },
-    SUN_0500: { type: "ATTACHEMENT", concept: "Script attachement CTA (book calls)", inspi: "Jaeyippy" },
+    MON_0631: "AUDIENCE",
+    TUE_1104: "EXPERT",
+    WED_1217: "ATTACHEMENT",
+    FRI_1600: "AUDIENCE",
+    SUN_0500: "ATTACHEMENT",
   },
   3: {
-    MON_0631: { type: "AUDIENCE", concept: "BOOM Portfolio", inspi: "Démo express projet" },
-    TUE_1104: { type: "EXPERT", concept: "Tryhard B-Roll Expert", inspi: "/tcastro/" },
-    WED_1217: { type: "ATTACHEMENT", concept: "Avis clivant fort", inspi: "Samx, Gin" },
-    FRI_1600: { type: "VALEUR", concept: "Knowledge donné gratuit", inspi: "Carrousel tips avancés" },
-    SUN_0500: { type: "ATTACHEMENT", concept: "Story + Outfit, boucle légion", inspi: "Outfit of ze night" },
+    MON_0631: "AUDIENCE",
+    TUE_1104: "EXPERT",
+    WED_1217: "ATTACHEMENT",
+    FRI_1600: "VALEUR",
+    SUN_0500: "ATTACHEMENT",
   },
 };
 
-// Origine de référence pour le numéro de Légion
-// Lundi 5 mai 2026 = début de Légion 1 (peut être ajusté)
-export const LEGION_EPOCH = new Date("2026-05-04T00:00:00.000Z").getTime();
-
-export function getLegionAndSalve(date: Date): { legion: number; salve: 1 | 2 | 3; weekIdx: number } {
-  const ms = date.getTime() - LEGION_EPOCH;
-  const weekIdx = Math.floor(ms / (7 * 24 * 60 * 60 * 1000));
-  const legion = Math.floor(weekIdx / 3) + 1;
-  const salve = ((weekIdx % 3) + 1) as 1 | 2 | 3;
-  return { legion, salve, weekIdx };
-}
+// Calcule la date d'un slot donné pour une légion/salve donnée.
+// Utilise lundi 4 mai 2026 comme origine (Légion 1 Salve 1 = cette semaine-là).
+const ORIGIN = new Date("2026-05-04T00:00:00.000Z").getTime();
 
 export function getDateForSlot(legion: number, salve: 1 | 2 | 3, slot: WeekSlot): Date {
   const weekIdx = (legion - 1) * 3 + (salve - 1);
   const slotInfo = WEEK_SLOTS[slot];
-  const monday = new Date(LEGION_EPOCH + weekIdx * 7 * 24 * 60 * 60 * 1000);
-  // Adjust to slot's day
+  const monday = new Date(ORIGIN + weekIdx * 7 * 24 * 60 * 60 * 1000);
   const targetDay = slotInfo.dayIdx;
-  // monday.getUTCDay() should be 1 (Monday)
-  let dayOffset = (targetDay as number) - 1;
-  if (targetDay === 0) dayOffset = 6; // Sunday is at end of week
+  let dayOffset = targetDay - 1;
+  if (targetDay === 0) dayOffset = 6;
   const date = new Date(monday.getTime() + dayOffset * 24 * 60 * 60 * 1000);
   date.setHours(slotInfo.hour, slotInfo.minute, 0, 0);
   return date;

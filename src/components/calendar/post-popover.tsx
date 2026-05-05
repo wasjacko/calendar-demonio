@@ -92,7 +92,7 @@ export function PostPopover({
           )}
           {typeInfo && (
             <Badge className={cn("absolute top-2 left-2", `bg-${typeInfo.color} text-white`)}>
-              {typeInfo.emoji} {typeInfo.label}
+              {typeInfo.label}
             </Badge>
           )}
           <Badge variant={post.status.toLowerCase() as never} className="absolute top-2 right-2 text-[10px]">
@@ -107,7 +107,7 @@ export function PostPopover({
             <p className="font-semibold text-sm sm:text-base line-clamp-2">{post.title}</p>
             {post.scheduled_for && (
               <p className="text-xs text-muted-foreground mt-0.5">
-                {FORMATS[post.format].emoji} {FORMATS[post.format].label} · {formatRelative(post.scheduled_for)}
+                {FORMATS[post.format].label} · {formatRelative(post.scheduled_for)}
               </p>
             )}
           </div>

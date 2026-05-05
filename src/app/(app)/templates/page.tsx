@@ -116,10 +116,10 @@ function TemplateCard({ template, onUse }: { template: Template; onUse: () => vo
           <div className="flex items-center gap-2 flex-wrap">
             {template.content_type && (
               <Badge variant={template.content_type.toLowerCase() as never}>
-                {CONTENT_TYPES[template.content_type].emoji} {CONTENT_TYPES[template.content_type].label}
+                {CONTENT_TYPES[template.content_type].label}
               </Badge>
             )}
-            <Badge variant="outline">{FORMATS[template.format].emoji} {FORMATS[template.format].label}</Badge>
+            <Badge variant="outline">{FORMATS[template.format].label}</Badge>
           </div>
         </div>
         <CardTitle className="text-base mt-2">{template.name}</CardTitle>

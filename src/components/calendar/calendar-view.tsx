@@ -44,7 +44,7 @@ export function CalendarView() {
       )
       .map((p) => ({
         id: p.id,
-        title: `${FORMATS[p.format].emoji} ${p.title}`,
+        title: p.title,
         start: p.scheduled_for!,
         allDay: !p.scheduled_for!.includes("T") || p.scheduled_for!.endsWith("T00:00:00.000Z"),
         classNames: [

@@ -3,57 +3,52 @@
 import * as React from "react";
 import Link from "next/link";
 import {
-  LayoutDashboard,
   ArrowUpRight,
   Plus,
   Eye,
   Heart,
   MessageCircle,
   Bookmark,
-  TrendingUp,
   Calendar as CalendarIcon,
   Link as LinkIcon,
-  Target,
+  ChevronDown,
 } from "lucide-react";
 import { useDataStore, useUIStore } from "@/lib/store";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { CopyButton } from "@/components/copy-button";
+import { useCurrentSalve } from "@/lib/use-current-salve";
 import {
   CONTENT_TYPES,
   FORMATS,
   STATUSES,
-  WEEK_SLOTS,
-  WEEK_SLOTS_ORDER,
-  SALVE_PATTERNS,
-  getLegionAndSalve,
-  getDateForSlot,
+  type ContentType,
   type Post,
 } from "@/lib/types";
 import { formatRelative, cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function DashboardPage() {
   const { posts, loading } = useDataStore();
   const { openEditor } = useUIStore();
+  const current = useCurrentSalve();
 
-  const today = React.useMemo(() => new Date(), []);
-  const currentInfo = React.useMemo(() => getLegionAndSalve(today), [today]);
-  const stats = React.useMemo(() => computeStats(posts, currentInfo), [posts, currentInfo]);
+  const stats = React.useMemo(() => computeStats(posts), [posts]);
 
   return (
     <div className="p-3 sm:p-4 md:p-6 max-w-5xl mx-auto space-y-4 sm:space-y-6">
-      <div className="flex items-start justify-between flex-wrap gap-4">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <LayoutDashboard className="size-6" /> Dashboard
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Légion <strong>{currentInfo.legion}</strong> · Salve <strong>{currentInfo.salve}</strong> en cours.
-          </p>
-        </div>
-        <Button variant="gradient" onClick={() => openEditor()}>
+      {/* Header : juste salve courante + bouton */}
+      <div className="flex items-start justify-between flex-wrap gap-3">
+        <SalveSelector current={current} />
+        <Button variant="gradient" onClick={() => openEditor()} className="h-10">
           <Plus className="size-4" /> Nouveau
         </Button>
       </div>
@@ -62,116 +57,87 @@ export default function DashboardPage() {
         <Card><CardContent className="p-12 text-center text-muted-foreground">Chargement…</CardContent></Card>
       ) : (
         <>
-          {/* Big paste URL prompt */}
-          <Card className="border-primary/30">
-            <CardContent className="p-5">
-              <button
-                onClick={() => openEditor()}
-                className="w-full text-left rounded-lg border-2 border-dashed border-border hover:border-primary/50 p-6 transition-colors group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="size-12 rounded-lg gradient-brand flex items-center justify-center shrink-0">
-                    <LinkIcon className="size-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold">Nouveau post</p>
-                    <p className="text-sm text-muted-foreground">
-                      Colle une URL de référence Insta + choisis le slot de la salve
-                    </p>
-                  </div>
-                  <ArrowUpRight className="size-5 text-muted-foreground group-hover:text-primary" />
-                </div>
-              </button>
-            </CardContent>
-          </Card>
-
-          {/* Salve actuelle progress */}
-          <Card>
-            <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
-              <div>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Target className="size-4" /> Salve {currentInfo.salve} — {stats.salveCompletion.filled}/5 posts
-                </CardTitle>
-                <CardDescription>Cette semaine</CardDescription>
+          {/* Drop URL principal */}
+          <button
+            onClick={() => openEditor()}
+            className="w-full text-left rounded-xl border-2 border-dashed border-border hover:border-primary/50 p-5 transition-colors group bg-card"
+          >
+            <div className="flex items-center gap-3">
+              <div className="size-11 rounded-lg gradient-brand flex items-center justify-center shrink-0">
+                <LinkIcon className="size-5 text-white" />
               </div>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/strategy">Voir Légion <ArrowUpRight className="size-3.5" /></Link>
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <Progress value={(stats.salveCompletion.filled / 5) * 100} className="h-2 mb-4" indicatorClassName="gradient-brand" />
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                {WEEK_SLOTS_ORDER.map((slot) => {
-                  const post = stats.currentSalvePosts.get(slot);
-                  const pattern = SALVE_PATTERNS[currentInfo.salve][slot];
-                  const typeInfo = CONTENT_TYPES[pattern.type];
-                  return (
-                    <button
-                      key={slot}
-                      onClick={() => post ? openEditor(post.id) : openEditor(null, getDateForSlot(currentInfo.legion, currentInfo.salve, slot).toISOString())}
-                      className={cn(
-                        "rounded-lg border p-2 text-left transition-colors",
-                        post ? "border-border hover:bg-accent" : "border-dashed hover:border-primary/50"
-                      )}
-                    >
-                      <p className="text-[10px] uppercase font-bold tracking-wide text-muted-foreground">{WEEK_SLOTS[slot].shortLabel}</p>
-                      <Badge variant={pattern.type.toLowerCase() as never} className="mt-1 text-[9px]">
-                        {typeInfo.emoji}
-                      </Badge>
-                      <p className="text-xs mt-1 line-clamp-1">{post ? post.title : pattern.concept}</p>
-                    </button>
-                  );
-                })}
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm">Ajouter une vidéo</p>
+                <p className="text-xs text-muted-foreground">Colle une URL Instagram</p>
               </div>
-            </CardContent>
-          </Card>
+              <ArrowUpRight className="size-5 text-muted-foreground group-hover:text-primary" />
+            </div>
+          </button>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <MiniStat label="Posts publiés" value={stats.totalPublished} hint="depuis toujours" />
-            <MiniStat label="Vues totales" value={stats.totalViews} hint="cumul" />
-            <MiniStat label="Engagement" value={stats.totalEngagement} hint="likes+comments+saves" />
-            <MiniStat label="À programmer" value={stats.ideas} hint="brouillons + idées" />
+          {/* KPIs principales */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+            <Kpi label="Publiés" value={stats.published} />
+            <Kpi label="Vues totales" value={stats.totalViews} />
+            <Kpi label="Engagement" value={stats.totalEngagement} />
+            <Kpi label="Brouillons" value={stats.drafts} />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Vidéos par type */}
+          <Card>
+            <CardContent className="p-4 space-y-3">
+              <p className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">
+                Vidéos par catégorie
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {(Object.keys(CONTENT_TYPES) as ContentType[]).map((t) => (
+                  <div key={t} className="rounded-lg border border-border p-3">
+                    <div className="flex items-center gap-1.5">
+                      <span className={`size-2.5 rounded-full bg-${CONTENT_TYPES[t].color}`} />
+                      <span className="text-xs font-medium">{CONTENT_TYPES[t].label}</span>
+                    </div>
+                    <p className="text-xl font-bold mt-1">{stats.byType[t]}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Listes : à venir + résultats */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
             <Card>
-              <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
-                <div>
-                  <CardTitle className="text-base">À venir</CardTitle>
-                  <CardDescription>Prochains posts programmés</CardDescription>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">À venir</p>
+                  <Button variant="ghost" size="sm" asChild className="h-7 text-xs">
+                    <Link href="/calendar">Voir tout <ArrowUpRight className="size-3" /></Link>
+                  </Button>
                 </div>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href="/calendar">Calendrier <ArrowUpRight className="size-3.5" /></Link>
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-1.5">
-                {stats.upcoming.length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-6 text-center">Aucun post programmé.</p>
-                ) : (
-                  stats.upcoming.slice(0, 5).map((p) => (
-                    <PostRow key={p.id} post={p} onClick={() => openEditor(p.id)} />
-                  ))
-                )}
+                <div className="space-y-1">
+                  {stats.upcoming.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-4 text-center">Aucun post programmé.</p>
+                  ) : (
+                    stats.upcoming.slice(0, 5).map((p) => (
+                      <PostRow key={p.id} post={p} onClick={() => openEditor(p.id)} />
+                    ))
+                  )}
+                </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <TrendingUp className="size-4" /> Résultats récents
-                </CardTitle>
-                <CardDescription>Posts publiés avec leurs métriques</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {stats.recentPublished.length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-6 text-center">
-                    Aucun post publié avec métriques. Marque tes posts &quot;Publié&quot; et saisis vues/likes.
-                  </p>
-                ) : (
-                  stats.recentPublished.slice(0, 5).map((p) => (
-                    <ResultRow key={p.id} post={p} onClick={() => openEditor(p.id)} />
-                  ))
-                )}
+              <CardContent className="p-4">
+                <p className="text-xs uppercase tracking-wide font-semibold text-muted-foreground mb-3">Résultats récents</p>
+                <div className="space-y-1">
+                  {stats.recentPublished.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-4 text-center">
+                      Pas encore de posts publiés avec métriques.
+                    </p>
+                  ) : (
+                    stats.recentPublished.slice(0, 5).map((p) => (
+                      <ResultRow key={p.id} post={p} onClick={() => openEditor(p.id)} />
+                    ))
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -181,13 +147,48 @@ export default function DashboardPage() {
   );
 }
 
-function MiniStat({ label, value, hint }: { label: string; value: number; hint?: string }) {
+function SalveSelector({ current }: { current: ReturnType<typeof useCurrentSalve> }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border hover:bg-accent transition-colors">
+          <div className="text-left">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-bold">En cours</p>
+            <p className="text-sm font-semibold">Légion {current.legion} · Salve {current.salve}</p>
+          </div>
+          <ChevronDown className="size-4 text-muted-foreground" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-56">
+        <DropdownMenuLabel>Salve</DropdownMenuLabel>
+        {([1, 2, 3] as const).map((s) => (
+          <DropdownMenuItem
+            key={s}
+            onClick={() => current.setCurrent({ legion: current.legion, salve: s })}
+            className={current.salve === s ? "bg-accent" : ""}
+          >
+            Salve {s}
+          </DropdownMenuItem>
+        ))}
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Légion</DropdownMenuLabel>
+        <DropdownMenuItem onClick={() => current.setCurrent({ legion: Math.max(1, current.legion - 1), salve: current.salve })}>
+          Légion précédente
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => current.setCurrent({ legion: current.legion + 1, salve: current.salve })}>
+          Légion suivante
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function Kpi({ label, value }: { label: string; value: number }) {
   return (
     <Card>
-      <CardContent className="p-4">
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="text-2xl font-bold mt-1">{formatNumber(value)}</p>
-        {hint && <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{hint}</p>}
+      <CardContent className="p-3 sm:p-4">
+        <p className="text-[10px] sm:text-xs uppercase tracking-wide text-muted-foreground font-semibold">{label}</p>
+        <p className="text-xl sm:text-2xl font-bold mt-1">{formatNumber(value)}</p>
       </CardContent>
     </Card>
   );
@@ -201,9 +202,12 @@ function PostRow({ post, onClick }: { post: Post; onClick: () => void }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={post.visual_url} alt="" className="size-10 rounded-md object-cover shrink-0" onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")} />
         ) : (
-          <span className="size-10 rounded-md flex items-center justify-center text-base bg-muted shrink-0">
-            {FORMATS[post.format].emoji}
-          </span>
+          <div className={cn(
+            "size-10 rounded-md flex items-center justify-center shrink-0 text-[10px] font-semibold",
+            post.content_type ? `bg-${CONTENT_TYPES[post.content_type].color}/15 text-${CONTENT_TYPES[post.content_type].color}` : "bg-muted text-muted-foreground"
+          )}>
+            {FORMATS[post.format].label.slice(0, 4)}
+          </div>
         )}
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">{post.title}</p>
@@ -216,7 +220,7 @@ function PostRow({ post, onClick }: { post: Post; onClick: () => void }) {
         </div>
         {post.content_type && (
           <Badge variant={post.content_type.toLowerCase() as never} className="shrink-0 text-[10px]">
-            {CONTENT_TYPES[post.content_type].emoji}
+            {CONTENT_TYPES[post.content_type].label}
           </Badge>
         )}
       </button>
@@ -239,9 +243,9 @@ function ResultRow({ post, onClick }: { post: Post; onClick: () => void }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={post.visual_url} alt="" className="size-10 rounded-md object-cover shrink-0" onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")} />
         ) : (
-          <span className="size-10 rounded-md flex items-center justify-center text-base bg-muted shrink-0">
-            {FORMATS[post.format].emoji}
-          </span>
+          <div className="size-10 rounded-md flex items-center justify-center bg-muted text-muted-foreground shrink-0 text-[10px] font-semibold">
+            {FORMATS[post.format].label.slice(0, 4)}
+          </div>
         )}
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">{post.title}</p>
@@ -270,7 +274,7 @@ function formatNumber(n: number | undefined): string {
   return (n / 1_000_000).toFixed(1) + "M";
 }
 
-function computeStats(posts: Post[], currentInfo: { legion: number; salve: 1 | 2 | 3 }) {
+function computeStats(posts: Post[]) {
   const now = new Date();
 
   const upcoming = posts
@@ -291,26 +295,23 @@ function computeStats(posts: Post[], currentInfo: { legion: number; salve: 1 | 2
     return sum + (perf.likes ?? 0) + (perf.comments ?? 0) + (perf.saves ?? 0);
   }, 0);
 
-  // Posts of current Salve
-  const currentSalvePosts = new Map<string, Post>();
+  const byType: Record<ContentType, number> = {
+    EXPERT: 0,
+    AUDIENCE: 0,
+    ATTACHEMENT: 0,
+    VALEUR: 0,
+  };
   posts.forEach((p) => {
-    if (
-      p.legion_number === currentInfo.legion &&
-      p.salve_number === currentInfo.salve &&
-      p.week_slot
-    ) {
-      currentSalvePosts.set(p.week_slot, p);
-    }
+    if (p.content_type) byType[p.content_type]++;
   });
 
   return {
-    ideas: posts.filter((p) => p.status === "IDEA" || p.status === "DRAFT").length,
-    totalPublished: posts.filter((p) => p.status === "PUBLISHED").length,
+    drafts: posts.filter((p) => p.status === "IDEA" || p.status === "DRAFT").length,
+    published: posts.filter((p) => p.status === "PUBLISHED").length,
     totalViews,
     totalEngagement,
     upcoming,
     recentPublished,
-    currentSalvePosts,
-    salveCompletion: { filled: currentSalvePosts.size },
+    byType,
   };
 }

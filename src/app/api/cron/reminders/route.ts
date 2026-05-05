@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
     if (posts && posts.length > 0) {
       const list = posts.slice(0, 5).map((p) => {
         const f = FORMATS[p.format as keyof typeof FORMATS];
-        return `${f.emoji} ${p.title}`;
+        return `${f.label} — ${p.title}`;
       }).join("\n");
 
       await sendPushToMany(subs, {
