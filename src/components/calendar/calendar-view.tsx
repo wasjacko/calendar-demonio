@@ -18,7 +18,7 @@ import type {
 import { useDataStore, useUIStore } from "@/lib/store";
 import { reschedulePost } from "@/lib/posts";
 import { toast } from "sonner";
-import { FORMATS, FUNNEL_STAGES } from "@/lib/types";
+import { FORMATS, CONTENT_TYPES } from "@/lib/types";
 import type { Post } from "@/lib/types";
 
 export function CalendarView() {
@@ -30,7 +30,7 @@ export function CalendarView() {
   const events: EventInput[] = React.useMemo(() => {
     return posts
       .filter((p) => p.scheduled_for !== null)
-      .filter((p) => filters.funnel.length === 0 || filters.funnel.includes(p.funnel_stage))
+      .filter((p) => filters.contentType.length === 0 || (p.content_type !== null && filters.contentType.includes(p.content_type)))
       .filter((p) => filters.status.length === 0 || filters.status.includes(p.status))
       .filter((p) =>
         filters.search.trim() === "" ||
@@ -44,7 +44,7 @@ export function CalendarView() {
         start: p.scheduled_for!,
         allDay: !p.scheduled_for!.includes("T") || p.scheduled_for!.endsWith("T00:00:00.000Z"),
         classNames: [
-          `fc-event-${p.funnel_stage.toLowerCase()}`,
+          p.content_type ? `fc-event-${p.content_type.toLowerCase()}` : "",
           `fc-event-status-${p.status.toLowerCase()}`,
           p.visual_url ? "fc-event-with-image" : "",
         ].filter(Boolean),
@@ -101,9 +101,10 @@ export function CalendarView() {
   const handleEventDidMount = (arg: EventMountArg) => {
     const post = arg.event.extendedProps.post as Post | undefined;
     if (!post) return;
-    arg.el.setAttribute("data-funnel", post.funnel_stage);
+    arg.el.setAttribute("data-content-type", post.content_type ?? "");
     arg.el.setAttribute("data-status", post.status);
-    arg.el.setAttribute("title", `${FUNNEL_STAGES[post.funnel_stage].label} · ${FORMATS[post.format].label} · ${post.status}`);
+    const typeLabel = post.content_type ? CONTENT_TYPES[post.content_type].label : "—";
+    arg.el.setAttribute("title", `${typeLabel} · ${FORMATS[post.format].label} · ${post.status}`);
 
     if (post.visual_url) {
       const titleEl = arg.el.querySelector(".fc-event-title") as HTMLElement | null;

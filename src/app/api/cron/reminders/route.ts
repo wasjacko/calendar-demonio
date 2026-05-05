@@ -4,7 +4,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendPushToMany } from "@/lib/web-push";
-import { FORMATS, FUNNEL_STAGES } from "@/lib/types";
+import { FORMATS } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
   if (settingsRow?.notifications_enabled !== false && subs && subs.length > 0) {
     const { data: posts } = await supabase
       .from("posts")
-      .select("id, title, scheduled_for, format, funnel_stage")
+      .select("id, title, scheduled_for, format, content_type")
       .eq("user_id", ownerId)
       .eq("status", "SCHEDULED")
       .gte("scheduled_for", now.toISOString())

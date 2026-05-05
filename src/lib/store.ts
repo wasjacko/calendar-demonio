@@ -2,12 +2,12 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Post, Reminder, Template, FunnelStage, ContentStatus } from "./types";
+import type { Post, Reminder, Template, ContentType, ContentStatus } from "./types";
 
 type ViewMode = "month" | "week" | "day" | "list" | "multimonth";
 
 interface FilterState {
-  funnel: FunnelStage[];
+  contentType: ContentType[];
   status: ContentStatus[];
   search: string;
 }
@@ -29,7 +29,7 @@ interface UIStore {
 }
 
 const defaultFilters: FilterState = {
-  funnel: [],
+  contentType: [],
   status: [],
   search: "",
 };

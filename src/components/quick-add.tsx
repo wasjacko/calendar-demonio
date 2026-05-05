@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import { toast } from "sonner";
 import {
   Loader2,
@@ -38,12 +37,17 @@ import {
 import { useUIStore, useDataStore } from "@/lib/store";
 import { createPost, updatePost, deletePost, publishPost } from "@/lib/posts";
 import {
-  FUNNEL_STAGES,
+  CONTENT_TYPES,
   FORMATS,
   STATUSES,
-  type FunnelStage,
+  WEEK_SLOTS,
+  WEEK_SLOTS_ORDER,
+  SALVE_PATTERNS,
+  getLegionAndSalve,
+  type ContentType,
   type ContentFormat,
   type ContentStatus,
+  type WeekSlot,
   type Post,
 } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -71,15 +75,22 @@ export function QuickAdd() {
 
   const [title, setTitle] = React.useState("");
   const [caption, setCaption] = React.useState("");
-  const [funnelStage, setFunnelStage] = React.useState<FunnelStage>("TOFU");
+  const [contentType, setContentType] = React.useState<ContentType>("ATTACHEMENT");
   const [format, setFormat] = React.useState<ContentFormat>("REEL");
   const [status, setStatus] = React.useState<ContentStatus>("IDEA");
   const [scheduledFor, setScheduledFor] = React.useState<string | null>(null);
+  const [weekSlot, setWeekSlot] = React.useState<WeekSlot | null>(null);
+  const [inspiFrom, setInspiFrom] = React.useState("");
 
   const [views, setViews] = React.useState("");
   const [likes, setLikes] = React.useState("");
   const [comments, setComments] = React.useState("");
   const [saves, setSaves] = React.useState("");
+
+  const computed = React.useMemo(() => {
+    if (!scheduledFor) return null;
+    return getLegionAndSalve(new Date(scheduledFor));
+  }, [scheduledFor]);
 
   React.useEffect(() => {
     if (!editorOpen) return;
@@ -87,33 +98,58 @@ export function QuickAdd() {
       setUrl(post.source_url ?? "");
       setTitle(post.title);
       setCaption(post.caption ?? "");
-      setFunnelStage(post.funnel_stage);
+      setContentType(post.content_type ?? "ATTACHEMENT");
       setFormat(post.format);
       setStatus(post.status);
       setScheduledFor(post.scheduled_for);
+      setWeekSlot(post.week_slot ?? null);
+      setInspiFrom(post.inspi_from ?? "");
       const perf = post.performance ?? {};
       setViews(perf.views?.toString() ?? "");
       setLikes(perf.likes?.toString() ?? "");
       setComments(perf.comments?.toString() ?? "");
       setSaves(perf.saves?.toString() ?? "");
-      const ogData = (post as Post & { og_data?: PreviewData }).og_data;
-      if (ogData) setPreview(ogData);
+      if (post.og_data) setPreview(post.og_data as never);
       else setPreview(null);
     } else {
       setUrl("");
       setTitle("");
       setCaption("");
-      setFunnelStage("TOFU");
+      setContentType("ATTACHEMENT");
       setFormat("REEL");
       setStatus(selectedDate ? "SCHEDULED" : "IDEA");
       setScheduledFor(selectedDate);
+      setInspiFrom("");
       setViews("");
       setLikes("");
       setComments("");
       setSaves("");
       setPreview(null);
+      // Auto-detect slot from selectedDate
+      if (selectedDate) {
+        const d = new Date(selectedDate);
+        const matched = WEEK_SLOTS_ORDER.find((s) => {
+          const info = WEEK_SLOTS[s];
+          return d.getDay() === (info.dayIdx as number) && Math.abs(d.getHours() - info.hour) <= 1;
+        });
+        setWeekSlot(matched ?? null);
+        if (matched && computed) {
+          const pattern = SALVE_PATTERNS[computed.salve][matched];
+          setContentType(pattern.type);
+        }
+      } else {
+        setWeekSlot(null);
+      }
     }
   }, [editorOpen, post, selectedDate]);
+
+  // Apply Salve pattern when slot or salve changes (only for new posts)
+  React.useEffect(() => {
+    if (post || !weekSlot || !computed) return;
+    const pattern = SALVE_PATTERNS[computed.salve][weekSlot];
+    setContentType(pattern.type);
+    if (!inspiFrom) setInspiFrom(pattern.inspi);
+  }, [weekSlot, computed, post]); // eslint-disable-line
 
   const fetchPreview = async (urlToFetch: string) => {
     if (!urlToFetch.startsWith("http")) return;
@@ -123,11 +159,10 @@ export function QuickAdd() {
       if (!res.ok) throw new Error(await res.text());
       const data = (await res.json()) as PreviewData;
       setPreview(data);
-      // Auto-fill fields from preview
       if (data.title && !title) setTitle(data.title.slice(0, 120));
       if (data.description && !caption) setCaption(data.description);
       if (data.format && data.format !== "OTHER") setFormat(data.format as ContentFormat);
-      toast.success("Aperçu chargé", { description: data.site_name ?? "URL analysée" });
+      toast.success("Aperçu chargé");
     } catch (err) {
       toast.error("Impossible de charger l'aperçu", {
         description: err instanceof Error ? err.message : undefined,
@@ -146,8 +181,21 @@ export function QuickAdd() {
   };
 
   const handleUrlBlur = () => {
-    if (url && url.startsWith("http") && !preview) {
-      fetchPreview(url);
+    if (url && url.startsWith("http") && !preview) fetchPreview(url);
+  };
+
+  const handleSlotChange = (slot: WeekSlot) => {
+    setWeekSlot(slot);
+    if (computed) {
+      const slotInfo = WEEK_SLOTS[slot];
+      const baseDate = scheduledFor ? new Date(scheduledFor) : new Date();
+      // Find the right date for this slot
+      const day = baseDate.getDay();
+      const targetDay = slotInfo.dayIdx as number;
+      const diff = targetDay - day;
+      baseDate.setDate(baseDate.getDate() + diff);
+      baseDate.setHours(slotInfo.hour, slotInfo.minute, 0, 0);
+      setScheduledFor(baseDate.toISOString());
     }
   };
 
@@ -170,7 +218,7 @@ export function QuickAdd() {
         title: title.trim(),
         caption: caption.trim() || null,
         format,
-        funnel_stage: funnelStage,
+        content_type: contentType,
         status,
         scheduled_for: scheduledFor,
         source_url: url.trim() || null,
@@ -178,11 +226,17 @@ export function QuickAdd() {
         visual_url: preview?.image ?? null,
         hashtags: preview?.hashtags ?? [],
         performance: hasPerformance ? performance : null,
+        week_slot: weekSlot,
+        salve_number: computed?.salve ?? null,
+        legion_number: computed?.legion ?? null,
+        inspi_from: inspiFrom.trim() || null,
       };
 
-      const saved = post ? await updatePost(post.id, payload as never) : await createPost(payload as never);
+      const saved = post
+        ? await updatePost(post.id, payload as never)
+        : await createPost(payload as never);
       upsertPost(saved);
-      toast.success(post ? "Mis à jour" : "Ajouté au calendrier", { description: saved.title });
+      toast.success(post ? "Mis à jour" : "Ajouté", { description: saved.title });
       closeEditor();
     } catch (err) {
       toast.error("Erreur", { description: err instanceof Error ? err.message : undefined });
@@ -211,7 +265,7 @@ export function QuickAdd() {
     try {
       const updated = await publishPost(post.id);
       upsertPost(updated);
-      toast.success("Marqué comme publié 🎉");
+      toast.success("Marqué publié 🎉");
     } catch (err) {
       toast.error("Erreur");
       console.error(err);
@@ -223,23 +277,37 @@ export function QuickAdd() {
       <DialogContent className="max-w-2xl p-0 overflow-hidden">
         <div className="flex flex-col max-h-[92vh]">
           <DialogHeader className="p-5 pb-3 border-b border-border">
-            <DialogTitle className="flex items-center gap-2 text-lg">
+            <div className="flex items-center gap-2 flex-wrap">
+              {computed && (
+                <Badge variant="outline" className="text-[10px] font-mono">
+                  Légion {computed.legion} · Salve {computed.salve}
+                </Badge>
+              )}
+              <Badge variant={contentType.toLowerCase() as never}>
+                {CONTENT_TYPES[contentType].emoji} {CONTENT_TYPES[contentType].label}
+              </Badge>
+              {weekSlot && (
+                <Badge variant="secondary" className="text-[10px]">
+                  {WEEK_SLOTS[weekSlot].shortLabel}
+                </Badge>
+              )}
+            </div>
+            <DialogTitle className="text-lg mt-2">
               {post ? "Modifier" : "Ajouter au calendrier"}
-              {preview?.site_name && <Badge variant="outline" className="ml-auto text-[10px]">{preview.site_name}</Badge>}
             </DialogTitle>
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
-            {/* URL field — focal point */}
+            {/* URL field */}
             <div className="space-y-1.5">
               <Label htmlFor="url" className="flex items-center gap-1.5">
-                <LinkIcon className="size-3.5" /> URL Instagram (ou autre)
+                <LinkIcon className="size-3.5" /> URL Instagram (référence ou ta vidéo publiée)
               </Label>
               <div className="relative">
                 <Input
                   id="url"
                   type="url"
-                  placeholder="Colle ici l'URL du Reel / Post / Carrousel..."
+                  placeholder="Colle l'URL : reel d'inspi ou ta vidéo une fois publiée"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   onPaste={handleUrlPaste}
@@ -262,12 +330,9 @@ export function QuickAdd() {
                   </Button>
                 )}
               </div>
-              <p className="text-[11px] text-muted-foreground">
-                Colle ton URL → on extrait l&apos;image, le format, la caption automatiquement.
-              </p>
             </div>
 
-            {/* Preview card */}
+            {/* Preview */}
             {preview && (
               <div className="rounded-lg border border-border overflow-hidden bg-muted/20">
                 {preview.image && (
@@ -275,11 +340,11 @@ export function QuickAdd() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={preview.image}
-                      alt={preview.title ?? "Aperçu"}
+                      alt={preview.title ?? ""}
                       className="absolute inset-0 size-full object-cover"
                       onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                     />
-                    <Badge className={cn("absolute top-2 left-2", `bg-${FUNNEL_STAGES[funnelStage].color} text-white`)}>
+                    <Badge className={cn("absolute top-2 left-2", `bg-${CONTENT_TYPES[contentType].color}`, "text-white")}>
                       {FORMATS[format].emoji} {FORMATS[format].label}
                     </Badge>
                   </div>
@@ -289,26 +354,60 @@ export function QuickAdd() {
                   {preview.description && (
                     <p className="text-xs text-muted-foreground line-clamp-3">{preview.description}</p>
                   )}
-                  {preview.hashtags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 pt-1">
-                      {preview.hashtags.slice(0, 6).map((h) => (
-                        <span key={h} className="text-[10px] text-primary">#{h}</span>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </div>
             )}
 
-            {/* Basic info — minimal */}
+            {/* Slot Salve recommendation */}
+            {weekSlot && computed && (
+              <div className="rounded-lg bg-primary/5 border border-primary/20 p-3">
+                <p className="text-xs font-medium text-primary mb-1">
+                  📋 Pattern Salve {computed.salve} · {WEEK_SLOTS[weekSlot].label}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  <strong>{SALVE_PATTERNS[computed.salve][weekSlot].concept}</strong> · inspi : {SALVE_PATTERNS[computed.salve][weekSlot].inspi}
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Rôle : {CONTENT_TYPES[contentType].role}
+                </p>
+              </div>
+            )}
+
             <div className="space-y-2">
-              <Label htmlFor="title">Titre</Label>
+              <Label htmlFor="title">Titre / concept</Label>
               <Input
                 id="title"
-                placeholder="Donne un nom à ce post"
+                placeholder="Ex: Boom Figma — démo du gradient mesh"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs">Slot semaine</Label>
+                <Select value={weekSlot ?? ""} onValueChange={(v) => handleSlotChange(v as WeekSlot)}>
+                  <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Choisir le slot" /></SelectTrigger>
+                  <SelectContent>
+                    {WEEK_SLOTS_ORDER.map((s) => (
+                      <SelectItem key={s} value={s}>{WEEK_SLOTS[s].label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Type Bara</Label>
+                <Select value={contentType} onValueChange={(v) => setContentType(v as ContentType)}>
+                  <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(CONTENT_TYPES) as ContentType[]).map((t) => (
+                      <SelectItem key={t} value={t}>
+                        {CONTENT_TYPES[t].emoji} {CONTENT_TYPES[t].label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="grid grid-cols-3 gap-2">
@@ -324,17 +423,6 @@ export function QuickAdd() {
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Funnel</Label>
-                <Select value={funnelStage} onValueChange={(v) => setFunnelStage(v as FunnelStage)}>
-                  <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {(Object.keys(FUNNEL_STAGES) as FunnelStage[]).map((s) => (
-                      <SelectItem key={s} value={s}>{s} — {FUNNEL_STAGES[s].label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
                 <Label className="text-xs">Statut</Label>
                 <Select value={status} onValueChange={(v) => setStatus(v as ContentStatus)}>
                   <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
@@ -345,30 +433,39 @@ export function QuickAdd() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-1">
+                <Label className="text-xs flex items-center gap-1">
+                  <CalendarIcon className="size-3" /> Date
+                </Label>
+                <Input
+                  type="datetime-local"
+                  value={scheduledFor ? toLocalDatetime(scheduledFor) : ""}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setScheduledFor(v ? new Date(v).toISOString() : null);
+                    if (v && status === "IDEA") setStatus("SCHEDULED");
+                  }}
+                  className="h-9 text-xs"
+                />
+              </div>
             </div>
 
             <div className="space-y-1">
-              <Label htmlFor="datetime" className="text-xs flex items-center gap-1">
-                <CalendarIcon className="size-3" /> Date & heure de publication
-              </Label>
+              <Label className="text-xs">Inspiré de</Label>
               <Input
-                id="datetime"
-                type="datetime-local"
-                value={scheduledFor ? toLocalDatetime(scheduledFor) : ""}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  setScheduledFor(v ? new Date(v).toISOString() : null);
-                  if (v && status === "IDEA") setStatus("SCHEDULED");
-                }}
+                placeholder="Ex: Ioannis, Samx, sebastiangohan…"
+                value={inspiFrom}
+                onChange={(e) => setInspiFrom(e.target.value)}
+                className="h-9 text-xs"
               />
             </div>
 
             {(caption || preview?.description) && (
               <div className="space-y-1">
-                <Label htmlFor="caption" className="text-xs">Caption</Label>
+                <Label htmlFor="caption" className="text-xs">Caption / Notes</Label>
                 <Textarea
                   id="caption"
-                  placeholder="Caption détectée ou personnalisée"
+                  placeholder="Caption ou notes libres"
                   value={caption}
                   onChange={(e) => setCaption(e.target.value)}
                   rows={3}
@@ -377,7 +474,7 @@ export function QuickAdd() {
               </div>
             )}
 
-            {/* Métriques — apparait pour Published / ou si déjà saisies */}
+            {/* Métriques pour posts publiés */}
             {(status === "PUBLISHED" || views || likes || comments || saves) && (
               <div className="rounded-lg bg-muted/40 p-3 space-y-2">
                 <p className="text-xs font-semibold flex items-center gap-1.5">

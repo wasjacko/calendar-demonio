@@ -2,7 +2,7 @@
 
 import { createClient } from "./supabase/client";
 import { OWNER_USER_ID } from "./owner";
-import type { Post, FunnelStage, ContentStatus, ContentFormat, ContentPillar } from "./types";
+import type { Post, ContentType, ContentStatus, ContentFormat, WeekSlot, OgData } from "./types";
 
 export interface PostInput {
   title: string;
@@ -14,12 +14,18 @@ export interface PostInput {
   visual_url?: string | null;
   audio_reference?: string | null;
   format: ContentFormat;
-  funnel_stage: FunnelStage;
-  pillar?: ContentPillar | null;
+  content_type?: ContentType | null;
   status: ContentStatus;
   scheduled_for?: string | null;
   notes?: string | null;
   template_id?: string | null;
+  source_url?: string | null;
+  og_data?: OgData | null;
+  performance?: Record<string, number | undefined> | null;
+  salve_number?: number | null;
+  legion_number?: number | null;
+  week_slot?: WeekSlot | null;
+  inspi_from?: string | null;
 }
 
 export async function fetchPosts(rangeStart?: Date, rangeEnd?: Date): Promise<Post[]> {

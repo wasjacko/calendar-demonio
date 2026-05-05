@@ -6,7 +6,7 @@ import { useUIStore } from "@/lib/store";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FUNNEL_STAGES, STATUSES, type FunnelStage, type ContentStatus } from "@/lib/types";
+import { CONTENT_TYPES, STATUSES, type ContentType, type ContentStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -26,13 +26,13 @@ const VIEW_BUTTONS = [
 
 export function CalendarToolbar() {
   const { viewMode, setViewMode, filters, setFilters, resetFilters } = useUIStore();
-  const activeFilterCount = filters.funnel.length + filters.status.length;
+  const activeFilterCount = filters.contentType.length + filters.status.length;
 
-  const toggleFunnel = (s: FunnelStage) => {
-    const next = filters.funnel.includes(s)
-      ? filters.funnel.filter((x) => x !== s)
-      : [...filters.funnel, s];
-    setFilters({ funnel: next });
+  const toggleType = (t: ContentType) => {
+    const next = filters.contentType.includes(t)
+      ? filters.contentType.filter((x) => x !== t)
+      : [...filters.contentType, t];
+    setFilters({ contentType: next });
   };
   const toggleStatus = (s: ContentStatus) => {
     const next = filters.status.includes(s)
@@ -47,7 +47,7 @@ export function CalendarToolbar() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
-            placeholder="Rechercher un post, un hook, une caption..."
+            placeholder="Rechercher un post, une caption..."
             value={filters.search}
             onChange={(e) => setFilters({ search: e.target.value })}
             className="pl-9"
@@ -66,20 +66,20 @@ export function CalendarToolbar() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-72 p-3">
-            <DropdownMenuLabel className="px-0 pb-2">Étape funnel</DropdownMenuLabel>
+            <DropdownMenuLabel className="px-0 pb-2">Type de contenu</DropdownMenuLabel>
             <div className="flex flex-wrap gap-1.5">
-              {(Object.keys(FUNNEL_STAGES) as FunnelStage[]).map((s) => (
+              {(Object.keys(CONTENT_TYPES) as ContentType[]).map((t) => (
                 <button
-                  key={s}
-                  onClick={() => toggleFunnel(s)}
+                  key={t}
+                  onClick={() => toggleType(t)}
                   className={cn(
                     "px-2.5 py-1 rounded-full text-xs font-medium border transition-colors",
-                    filters.funnel.includes(s)
-                      ? `bg-${FUNNEL_STAGES[s].color} text-white border-transparent`
+                    filters.contentType.includes(t)
+                      ? `bg-${CONTENT_TYPES[t].color} text-white border-transparent`
                       : "border-border hover:bg-accent"
                   )}
                 >
-                  {s}
+                  {CONTENT_TYPES[t].emoji} {CONTENT_TYPES[t].label}
                 </button>
               ))}
             </div>
@@ -132,10 +132,11 @@ export function CalendarToolbar() {
           );
         })}
 
-        <div className="ml-auto flex items-center gap-3 text-xs text-muted-foreground shrink-0">
-          <Legend color="tofu" label="Awareness" />
-          <Legend color="mofu" label="Engagement" />
-          <Legend color="bofu" label="Conversion" />
+        <div className="ml-auto hidden md:flex items-center gap-3 text-xs text-muted-foreground shrink-0">
+          <Legend color="expert" label="Expert" />
+          <Legend color="audience" label="Audience" />
+          <Legend color="attachement" label="Attachement" />
+          <Legend color="valeur" label="Valeur" />
         </div>
       </div>
     </div>
@@ -144,7 +145,7 @@ export function CalendarToolbar() {
 
 function Legend({ color, label }: { color: string; label: string }) {
   return (
-    <span className="hidden md:inline-flex items-center gap-1.5">
+    <span className="inline-flex items-center gap-1.5">
       <span className={`size-2.5 rounded-full bg-${color}`} />
       {label}
     </span>

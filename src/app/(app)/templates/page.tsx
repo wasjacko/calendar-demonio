@@ -3,13 +3,12 @@
 import * as React from "react";
 import { Sparkles, Search, Plus, Layers } from "lucide-react";
 import { useDataStore, useUIStore } from "@/lib/store";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { FUNNEL_STAGES, FORMATS, PILLARS, type FunnelStage, type Template } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { CONTENT_TYPES, FORMATS, type ContentType, type Template } from "@/lib/types";
 import { createPost } from "@/lib/posts";
 import { toast } from "sonner";
 
@@ -18,11 +17,11 @@ export default function TemplatesPage() {
   const upsertPost = useDataStore((s) => s.upsertPost);
   const { openEditor } = useUIStore();
   const [search, setSearch] = React.useState("");
-  const [stageFilter, setStageFilter] = React.useState<FunnelStage | "ALL">("ALL");
+  const [typeFilter, setTypeFilter] = React.useState<ContentType | "ALL">("ALL");
 
   const filtered = React.useMemo(() => {
     return templates.filter((t) => {
-      if (stageFilter !== "ALL" && t.funnel_stage !== stageFilter) return false;
+      if (typeFilter !== "ALL" && t.content_type !== typeFilter) return false;
       if (search.trim() === "") return true;
       const q = search.toLowerCase();
       return (
@@ -31,7 +30,7 @@ export default function TemplatesPage() {
         t.caption_template.toLowerCase().includes(q)
       );
     });
-  }, [templates, search, stageFilter]);
+  }, [templates, search, typeFilter]);
 
   const useTemplate = async (template: Template) => {
     try {
@@ -43,13 +42,12 @@ export default function TemplatesPage() {
         hashtags: template.hashtags,
         visual_brief: template.visual_brief,
         format: template.format,
-        funnel_stage: template.funnel_stage,
-        pillar: template.pillar,
+        content_type: template.content_type,
         status: "DRAFT",
         template_id: template.id,
       });
       upsertPost(created);
-      toast.success("Post créé depuis le template", { description: "Édite-le pour le personnaliser." });
+      toast.success("Post créé depuis le template");
       openEditor(created.id);
     } catch (err) {
       toast.error("Erreur");
@@ -61,34 +59,35 @@ export default function TemplatesPage() {
     <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
       <div>
         <h2 className="text-2xl font-bold flex items-center gap-2">
-          <Sparkles className="size-6" /> Templates Instagram
+          <Sparkles className="size-6" /> Templates Bara
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Démarre un post en 1 clic avec des structures qui convertissent.
+          15 patterns alignés avec ta cadence — Salve 1 / 2 / 3 × 5 slots.
         </p>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input
-            placeholder="Rechercher un template..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+        <Input
+          placeholder="Rechercher un template..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-9"
+        />
       </div>
 
-      <Tabs value={stageFilter} onValueChange={(v) => setStageFilter(v as FunnelStage | "ALL")}>
-        <TabsList className="w-full grid grid-cols-4">
+      <Tabs value={typeFilter} onValueChange={(v) => setTypeFilter(v as ContentType | "ALL")}>
+        <TabsList className="w-full grid grid-cols-5">
           <TabsTrigger value="ALL">Tous</TabsTrigger>
-          <TabsTrigger value="TOFU"><span className="size-2 rounded-full bg-tofu mr-1.5" />TOFU</TabsTrigger>
-          <TabsTrigger value="MOFU"><span className="size-2 rounded-full bg-mofu mr-1.5" />MOFU</TabsTrigger>
-          <TabsTrigger value="BOFU"><span className="size-2 rounded-full bg-bofu mr-1.5" />BOFU</TabsTrigger>
+          {(Object.keys(CONTENT_TYPES) as ContentType[]).map((t) => (
+            <TabsTrigger key={t} value={t}>
+              <span className={`size-2 rounded-full bg-${CONTENT_TYPES[t].color} mr-1.5`} />
+              {CONTENT_TYPES[t].label}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
-        <TabsContent value={stageFilter} className="mt-4">
+        <TabsContent value={typeFilter} className="mt-4">
           {filtered.length === 0 ? (
             <Card>
               <CardContent className="p-12 text-center text-muted-foreground">
@@ -115,11 +114,12 @@ function TemplateCard({ template, onUse }: { template: Template; onUse: () => vo
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant={template.funnel_stage.toLowerCase() as never}>{template.funnel_stage}</Badge>
-            <Badge variant="outline">{FORMATS[template.format].emoji} {FORMATS[template.format].label}</Badge>
-            {template.pillar && (
-              <Badge variant="secondary" className="text-[10px]">{PILLARS[template.pillar].emoji} {PILLARS[template.pillar].label}</Badge>
+            {template.content_type && (
+              <Badge variant={template.content_type.toLowerCase() as never}>
+                {CONTENT_TYPES[template.content_type].emoji} {CONTENT_TYPES[template.content_type].label}
+              </Badge>
             )}
+            <Badge variant="outline">{FORMATS[template.format].emoji} {FORMATS[template.format].label}</Badge>
           </div>
         </div>
         <CardTitle className="text-base mt-2">{template.name}</CardTitle>
@@ -131,7 +131,7 @@ function TemplateCard({ template, onUse }: { template: Template; onUse: () => vo
             <p className="text-xs line-clamp-2 italic">&quot;{template.hook_template}&quot;</p>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Structure</p>
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Structure / Brief</p>
             <p className="text-xs line-clamp-3 text-muted-foreground">{template.caption_template}</p>
           </div>
           <div>
@@ -140,7 +140,7 @@ function TemplateCard({ template, onUse }: { template: Template; onUse: () => vo
           </div>
         </div>
         <Button variant="gradient" size="sm" className="mt-4 w-full" onClick={onUse}>
-          <Plus className="size-3.5" /> Utiliser ce template
+          <Plus className="size-3.5" /> Utiliser
         </Button>
       </CardContent>
     </Card>
