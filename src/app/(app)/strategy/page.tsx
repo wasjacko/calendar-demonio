@@ -71,7 +71,7 @@ export default function StrategyPage() {
   }, [posts]);
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-3 sm:p-4 md:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">
       <div>
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <Target className="size-6" /> Salves d&apos;ascension — Légion {legion}
@@ -189,7 +189,7 @@ function SalveBlock({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
           {WEEK_SLOTS_ORDER.map((slot) => {
             const pattern = SALVE_PATTERNS[salve][slot];
             const post = postsBySlot.get(`${legion}-${salve}-${slot}`);
@@ -299,7 +299,7 @@ function SlotCell({
         </div>
       </button>
       {post.source_url && (
-        <div className="absolute bottom-1 right-1 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+        <div className="absolute bottom-1 right-1 flex items-center gap-0.5 sm:opacity-0 sm:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
           <CopyButton value={post.source_url} className="bg-background/90 backdrop-blur-sm rounded shadow-sm" size="xs" />
           <a
             href={post.source_url}

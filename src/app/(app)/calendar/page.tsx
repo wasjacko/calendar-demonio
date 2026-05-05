@@ -24,7 +24,7 @@ function CalendarPageInner() {
   }, [params, openEditor, router]);
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto">
+    <div className="p-3 sm:p-4 md:p-6 max-w-7xl mx-auto">
       <div className="mb-6">
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <CalendarIcon className="size-6" /> Calendrier éditorial

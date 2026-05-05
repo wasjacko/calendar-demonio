@@ -1,12 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { ExternalLink, Edit, Eye, Heart, MessageCircle, Bookmark } from "lucide-react";
+import { ExternalLink, Edit, Eye, Heart, MessageCircle, Bookmark, X } from "lucide-react";
 import { CopyButton } from "@/components/copy-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CONTENT_TYPES, FORMATS, STATUSES, type Post } from "@/lib/types";
 import { cn, formatRelative } from "@/lib/utils";
+import { useIsMobile } from "@/lib/use-mobile";
 
 export function PostPopover({
   post,
@@ -20,9 +21,10 @@ export function PostPopover({
   onEdit: () => void;
 }) {
   const popoverRef = React.useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   React.useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
         onClose();
       }
@@ -30,10 +32,14 @@ export function PostPopover({
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
-    setTimeout(() => document.addEventListener("mousedown", handleClickOutside), 0);
+    setTimeout(() => {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+    }, 0);
     document.addEventListener("keydown", handleEscape);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
       document.removeEventListener("keydown", handleEscape);
     };
   }, [onClose]);
@@ -41,10 +47,10 @@ export function PostPopover({
   const typeInfo = post.content_type ? CONTENT_TYPES[post.content_type] : null;
   const perf = post.performance ?? {};
 
-  // Smart positioning to stay in viewport
+  // Smart positioning for desktop only
   const [adjustedPos, setAdjustedPos] = React.useState(position);
   React.useEffect(() => {
-    if (!popoverRef.current) return;
+    if (isMobile || !popoverRef.current) return;
     const rect = popoverRef.current.getBoundingClientRect();
     const winW = window.innerWidth;
     const winH = window.innerHeight;
@@ -55,21 +61,18 @@ export function PostPopover({
     if (y + rect.height > winH - 16) y = position.y - rect.height - 8;
     if (y < 16) y = 16;
     setAdjustedPos({ x, y });
-  }, [position]);
+  }, [position, isMobile]);
 
-  return (
-    <div
-      ref={popoverRef}
-      className="fixed z-50 w-80 rounded-xl border border-border bg-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95"
-      style={{ left: adjustedPos.x, top: adjustedPos.y }}
-    >
+  const content = (
+    <>
       {post.visual_url && (
         <a
           href={post.source_url ?? "#"}
           target="_blank"
           rel="noopener noreferrer"
           className={cn(
-            "relative block aspect-[4/5] w-full bg-muted group/img",
+            "relative block w-full bg-muted group/img",
+            isMobile ? "aspect-[4/5] max-h-[40svh]" : "aspect-[4/5]",
             !post.source_url && "pointer-events-none"
           )}
         >
@@ -98,13 +101,24 @@ export function PostPopover({
         </a>
       )}
 
-      <div className="p-3 space-y-2">
-        <div>
-          <p className="font-semibold text-sm line-clamp-2">{post.title}</p>
-          {post.scheduled_for && (
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {FORMATS[post.format].emoji} {FORMATS[post.format].label} · {formatRelative(post.scheduled_for)}
-            </p>
+      <div className="p-3 sm:p-4 space-y-2.5">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm sm:text-base line-clamp-2">{post.title}</p>
+            {post.scheduled_for && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {FORMATS[post.format].emoji} {FORMATS[post.format].label} · {formatRelative(post.scheduled_for)}
+              </p>
+            )}
+          </div>
+          {isMobile && (
+            <button
+              onClick={onClose}
+              className="shrink-0 size-8 rounded-md flex items-center justify-center hover:bg-accent"
+              aria-label="Fermer"
+            >
+              <X className="size-4" />
+            </button>
           )}
         </div>
 
@@ -113,7 +127,7 @@ export function PostPopover({
         )}
 
         {post.status === "PUBLISHED" && (perf.views || perf.likes || perf.comments || perf.saves) && (
-          <div className="flex items-center gap-3 text-[11px] text-muted-foreground py-1 border-y border-border">
+          <div className="flex items-center gap-3 text-[11px] text-muted-foreground py-2 border-y border-border">
             {perf.views !== undefined && (
               <span className="flex items-center gap-1"><Eye className="size-3" /> {formatNum(perf.views)}</span>
             )}
@@ -129,22 +143,75 @@ export function PostPopover({
           </div>
         )}
 
-        <div className="flex items-center gap-1.5 pt-1">
-          {post.source_url && (
+        <div className={cn(
+          "flex items-center gap-2 pt-1",
+          isMobile && "grid grid-cols-3 gap-2"
+        )}>
+          {post.source_url ? (
             <>
-              <CopyButton value={post.source_url} label="Copier" className="border border-border" size="xs" />
-              <Button variant="outline" size="sm" asChild className="h-7 px-2 text-xs">
+              <CopyButton
+                value={post.source_url}
+                label="Copier"
+                className={cn(
+                  "border border-border justify-center",
+                  isMobile ? "w-full h-10" : "h-9 px-3"
+                )}
+                size={isMobile ? "md" : "sm"}
+              />
+              <Button
+                variant="outline"
+                size={isMobile ? "default" : "sm"}
+                asChild
+                className={cn(isMobile ? "w-full h-10" : "h-9 px-3 text-xs")}
+              >
                 <a href={post.source_url} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="size-3" /> Ouvrir
+                  <ExternalLink className="size-3.5" /> Ouvrir
                 </a>
               </Button>
             </>
+          ) : (
+            !isMobile && <div className="flex-1" />
           )}
-          <Button variant="default" size="sm" onClick={() => { onClose(); onEdit(); }} className="ml-auto h-7 px-3 text-xs">
-            <Edit className="size-3" /> Éditer
+          <Button
+            variant="default"
+            size={isMobile ? "default" : "sm"}
+            onClick={() => { onClose(); onEdit(); }}
+            className={cn(
+              isMobile ? "w-full h-10" : "h-9 px-3 ml-auto text-xs"
+            )}
+          >
+            <Edit className="size-3.5" /> Éditer
           </Button>
         </div>
       </div>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm animate-in fade-in" onClick={onClose} />
+        <div
+          ref={popoverRef}
+          className="fixed left-0 right-0 bottom-0 z-50 rounded-t-2xl bg-card shadow-2xl overflow-hidden animate-in slide-in-from-bottom max-h-[92svh] overflow-y-auto"
+          style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+        >
+          <div className="sticky top-0 z-10 flex justify-center pt-2 pb-1 bg-card">
+            <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+          </div>
+          {content}
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <div
+      ref={popoverRef}
+      className="fixed z-50 w-80 rounded-xl border border-border bg-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95"
+      style={{ left: adjustedPos.x, top: adjustedPos.y }}
+    >
+      {content}
     </div>
   );
 }

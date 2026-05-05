@@ -43,7 +43,7 @@ export default function DashboardPage() {
   const stats = React.useMemo(() => computeStats(posts, currentInfo), [posts, currentInfo]);
 
   return (
-    <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6">
+    <div className="p-3 sm:p-4 md:p-6 max-w-5xl mx-auto space-y-4 sm:space-y-6">
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -100,7 +100,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <Progress value={(stats.salveCompletion.filled / 5) * 100} className="h-2 mb-4" indicatorClassName="gradient-brand" />
-              <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {WEEK_SLOTS_ORDER.map((slot) => {
                   const post = stats.currentSalvePosts.get(slot);
                   const pattern = SALVE_PATTERNS[currentInfo.salve][slot];
@@ -223,7 +223,7 @@ function PostRow({ post, onClick }: { post: Post; onClick: () => void }) {
       {post.source_url && (
         <CopyButton
           value={post.source_url}
-          className="shrink-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+          className="shrink-0 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
         />
       )}
     </div>
@@ -256,7 +256,7 @@ function ResultRow({ post, onClick }: { post: Post; onClick: () => void }) {
       {post.source_url && (
         <CopyButton
           value={post.source_url}
-          className="shrink-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+          className="shrink-0 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
         />
       )}
     </div>

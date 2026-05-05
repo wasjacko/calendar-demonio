@@ -185,10 +185,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto">{children}</main>
+        <main className="flex-1 overflow-auto pb-20 md:pb-0">{children}</main>
 
-        <div className="md:hidden sticky bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur">
-          <nav className="grid grid-cols-5 gap-1 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        {/* Floating Action Button mobile (Nouveau post) */}
+        <button
+          onClick={() => openEditor()}
+          className="md:hidden fixed bottom-20 right-4 z-30 size-14 rounded-full gradient-brand flex items-center justify-center shadow-2xl active:scale-95 transition-transform"
+          style={{ marginBottom: "env(safe-area-inset-bottom)" }}
+          aria-label="Nouveau post"
+        >
+          <Plus className="size-6 text-white" />
+        </button>
+
+        <div className="md:hidden fixed left-0 right-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur">
+          <nav
+            className="grid grid-cols-5 gap-1 p-2"
+            style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
+          >
             {navItems.map((item) => {
               const active = pathname === item.href || pathname.startsWith(item.href + "/");
               const Icon = item.icon;
@@ -197,8 +210,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex flex-col items-center gap-1 rounded-md p-2 text-[10px] font-medium",
-                    active ? "text-primary" : "text-muted-foreground"
+                    "flex flex-col items-center gap-0.5 rounded-md p-2 text-[10px] font-medium min-h-[3rem] transition-colors",
+                    active ? "text-primary bg-primary/5" : "text-muted-foreground"
                   )}
                 >
                   <Icon className="size-5" />

@@ -276,9 +276,13 @@ export function QuickAdd() {
 
   return (
     <Dialog open={editorOpen} onOpenChange={(o) => !o && closeEditor()}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden">
-        <div className="flex flex-col max-h-[92vh]">
-          <DialogHeader className="p-5 pb-3 border-b border-border">
+      <DialogContent className="sm:max-w-2xl p-0 overflow-hidden">
+        <div className="flex flex-col max-h-[95svh] sm:max-h-[92vh]">
+          {/* Drag handle for mobile */}
+          <div className="sm:hidden flex justify-center pt-2 pb-1">
+            <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+          </div>
+          <DialogHeader className="p-4 sm:p-5 pb-3 border-b border-border">
             <div className="flex items-center gap-2 flex-wrap">
               {computed && (
                 <Badge variant="outline" className="text-[10px] font-mono">
@@ -299,7 +303,7 @@ export function QuickAdd() {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
             {/* URL field with inline actions */}
             <div className="space-y-1.5">
               <Label htmlFor="url" className="flex items-center gap-1.5">
@@ -532,23 +536,33 @@ export function QuickAdd() {
             )}
           </div>
 
-          <div className="border-t border-border p-3 flex gap-2 items-center">
+          <div
+            className="sticky bottom-0 z-10 border-t border-border p-3 sm:p-3 flex gap-2 items-center bg-card"
+            style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+          >
             {post && (
-              <Button type="button" variant="ghost" size="sm" onClick={handleDelete} className="text-destructive">
-                <Trash2 className="size-3.5" />
+              <Button type="button" variant="ghost" size="default" onClick={handleDelete} className="text-destructive shrink-0 size-10 px-0">
+                <Trash2 className="size-4" />
               </Button>
             )}
             {post && status !== "PUBLISHED" && (
-              <Button type="button" variant="outline" size="sm" onClick={handlePublish}>
+              <Button type="button" variant="outline" size="default" onClick={handlePublish} className="hidden sm:inline-flex">
                 Publié ✓
               </Button>
             )}
             <div className="flex-1" />
-            <Button type="button" variant="outline" size="sm" onClick={closeEditor}>
-              <X className="size-3.5" /> Annuler
+            <Button type="button" variant="outline" size="default" onClick={closeEditor} className="hidden sm:inline-flex">
+              <X className="size-4" /> Annuler
             </Button>
-            <Button type="button" variant="gradient" size="sm" onClick={onSubmit} disabled={submitting}>
-              {submitting ? <Loader2 className="size-3.5 animate-spin" /> : <Send className="size-3.5" />}
+            <Button
+              type="button"
+              variant="gradient"
+              size="default"
+              onClick={onSubmit}
+              disabled={submitting}
+              className="flex-1 sm:flex-initial h-11 sm:h-10"
+            >
+              {submitting ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
               {post ? "Sauvegarder" : "Ajouter"}
             </Button>
           </div>

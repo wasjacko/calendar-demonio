@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { FORMATS, CONTENT_TYPES } from "@/lib/types";
 import type { Post } from "@/lib/types";
 import { PostPopover } from "./post-popover";
+import { useIsMobile } from "@/lib/use-mobile";
 
 export function CalendarView() {
   const calendarRef = React.useRef<FullCalendar | null>(null);
@@ -28,6 +29,7 @@ export function CalendarView() {
   const upsertPost = useDataStore((s) => s.upsertPost);
   const { viewMode, filters, openEditor } = useUIStore();
   const [popover, setPopover] = React.useState<{ post: Post; x: number; y: number } | null>(null);
+  const isMobile = useIsMobile();
 
   const events: EventInput[] = React.useMemo(() => {
     return posts
@@ -55,6 +57,10 @@ export function CalendarView() {
   }, [posts, filters]);
 
   const fcView = React.useMemo(() => {
+    // Sur mobile, force la vue liste (mois est illisible sur petit écran)
+    if (isMobile && (viewMode === "month" || viewMode === "multimonth")) {
+      return "listWeek";
+    }
     switch (viewMode) {
       case "month": return "dayGridMonth";
       case "week": return "timeGridWeek";
@@ -63,7 +69,7 @@ export function CalendarView() {
       case "multimonth": return "multiMonth2Months";
       default: return "dayGridMonth";
     }
-  }, [viewMode]);
+  }, [viewMode, isMobile]);
 
   React.useEffect(() => {
     if (calendarRef.current) {
@@ -93,10 +99,11 @@ export function CalendarView() {
   const handleEventClick = (arg: EventClickArg) => {
     const post = arg.event.extendedProps.post as Post;
     const rect = (arg.el as HTMLElement).getBoundingClientRect();
+    // Sur mobile : position ignorée (sheet bottom-anchored)
     setPopover({
       post,
-      x: rect.right + 8,
-      y: rect.top,
+      x: isMobile ? 0 : rect.right + 8,
+      y: isMobile ? 0 : rect.top,
     });
     arg.jsEvent.preventDefault();
   };
@@ -142,14 +149,15 @@ export function CalendarView() {
           right: "",
         }}
         height="auto"
-        dayMaxEvents={3}
-        weekNumbers
+        dayMaxEvents={isMobile ? 2 : 3}
+        weekNumbers={!isMobile}
         weekText="S"
         nowIndicator
-        editable
-        droppable
+        editable={!isMobile}
+        droppable={!isMobile}
         selectable
         selectMirror
+        longPressDelay={500}
         eventDisplay="block"
         events={events}
         eventDrop={handleEventDrop}
