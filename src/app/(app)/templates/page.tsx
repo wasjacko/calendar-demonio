@@ -1,9 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Sparkles, Search, Plus, Layers } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import { useDataStore, useUIStore } from "@/lib/store";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,39 +48,29 @@ export default function TemplatesPage() {
       upsertPost(created);
       toast.success("Post créé depuis le template");
       openEditor(created.id);
-    } catch (err) {
+    } catch {
       toast.error("Erreur");
-      console.error(err);
     }
   };
 
   return (
-    <div className="p-3 sm:p-4 md:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <Sparkles className="size-6" /> Templates Bara
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          15 patterns alignés avec ta cadence — Salve 1 / 2 / 3 × 5 slots.
-        </p>
-      </div>
-
+    <div className="px-4 sm:px-6 py-5 sm:py-7 max-w-5xl mx-auto space-y-5">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <Input
-          placeholder="Rechercher un template..."
+          placeholder="Rechercher un template…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-9"
+          className="pl-9 h-10"
         />
       </div>
 
       <Tabs value={typeFilter} onValueChange={(v) => setTypeFilter(v as ContentType | "ALL")}>
-        <TabsList className="w-full grid grid-cols-5">
-          <TabsTrigger value="ALL">Tous</TabsTrigger>
+        <TabsList className="w-full grid grid-cols-5 h-9">
+          <TabsTrigger value="ALL" className="text-xs">Tous</TabsTrigger>
           {(Object.keys(CONTENT_TYPES) as ContentType[]).map((t) => (
-            <TabsTrigger key={t} value={t}>
-              <span className={`size-2 rounded-full bg-${CONTENT_TYPES[t].color} mr-1.5`} />
+            <TabsTrigger key={t} value={t} className="text-xs">
+              <span className={`size-1.5 rounded-full bg-${CONTENT_TYPES[t].color} mr-1`} />
               {CONTENT_TYPES[t].label}
             </TabsTrigger>
           ))}
@@ -89,14 +78,9 @@ export default function TemplatesPage() {
 
         <TabsContent value={typeFilter} className="mt-4">
           {filtered.length === 0 ? (
-            <Card>
-              <CardContent className="p-12 text-center text-muted-foreground">
-                <Layers className="size-10 mx-auto mb-3 opacity-50" />
-                Aucun template ne correspond.
-              </CardContent>
-            </Card>
+            <p className="text-sm text-muted-foreground text-center py-12">Aucun template.</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {filtered.map((t) => (
                 <TemplateCard key={t.id} template={t} onUse={() => useTemplate(t)} />
               ))}
@@ -110,39 +94,27 @@ export default function TemplatesPage() {
 
 function TemplateCard({ template, onUse }: { template: Template; onUse: () => void }) {
   return (
-    <Card className="flex flex-col hover:shadow-lg transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2 flex-wrap">
-            {template.content_type && (
-              <Badge variant={template.content_type.toLowerCase() as never}>
-                {CONTENT_TYPES[template.content_type].label}
-              </Badge>
-            )}
-            <Badge variant="outline">{FORMATS[template.format].label}</Badge>
-          </div>
+    <div className="rounded-xl border border-border bg-card p-4 hover:bg-accent/30 transition-colors flex flex-col gap-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {template.content_type && (
+            <Badge variant={template.content_type.toLowerCase() as never} className="text-[10px]">
+              {CONTENT_TYPES[template.content_type].label}
+            </Badge>
+          )}
+          <Badge variant="outline" className="text-[10px]">{FORMATS[template.format].label}</Badge>
         </div>
-        <CardTitle className="text-base mt-2">{template.name}</CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col">
-        <div className="space-y-2 flex-1">
-          <div>
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Hook</p>
-            <p className="text-xs line-clamp-2 italic">&quot;{template.hook_template}&quot;</p>
-          </div>
-          <div>
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Structure / Brief</p>
-            <p className="text-xs line-clamp-3 text-muted-foreground">{template.caption_template}</p>
-          </div>
-          <div>
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">CTA</p>
-            <p className="text-xs">{template.cta_template}</p>
-          </div>
+      </div>
+      <p className="font-semibold text-sm leading-tight">{template.name}</p>
+      <div className="space-y-2 flex-1">
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Hook</p>
+          <p className="text-xs italic text-muted-foreground line-clamp-2 mt-0.5">&quot;{template.hook_template}&quot;</p>
         </div>
-        <Button variant="gradient" size="sm" className="mt-4 w-full" onClick={onUse}>
-          <Plus className="size-3.5" /> Utiliser
-        </Button>
-      </CardContent>
-    </Card>
+      </div>
+      <Button variant="outline" size="sm" className="w-full" onClick={onUse}>
+        <Plus className="size-3.5" /> Utiliser
+      </Button>
+    </div>
   );
 }

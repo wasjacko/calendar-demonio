@@ -56,20 +56,11 @@ export function CalendarView() {
       }));
   }, [posts, filters]);
 
+  // Vue forcée à la semaine. Mobile = liste, Desktop = grille horaire.
   const fcView = React.useMemo(() => {
-    // Sur mobile, force la vue liste (mois est illisible sur petit écran)
-    if (isMobile && (viewMode === "month" || viewMode === "multimonth")) {
-      return "listWeek";
-    }
-    switch (viewMode) {
-      case "month": return "dayGridMonth";
-      case "week": return "timeGridWeek";
-      case "day": return "timeGridDay";
-      case "list": return "listWeek";
-      case "multimonth": return "multiMonth2Months";
-      default: return "dayGridMonth";
-    }
-  }, [viewMode, isMobile]);
+    return isMobile ? "listWeek" : "timeGridWeek";
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile, viewMode]);
 
   React.useEffect(() => {
     if (calendarRef.current) {
@@ -136,10 +127,10 @@ export function CalendarView() {
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-3 md:p-4">
+    <div className="rounded-2xl border border-border bg-card p-3 md:p-5">
       <FullCalendar
         ref={calendarRef}
-        plugins={[dayGridPlugin, timeGridPlugin, listPlugin, multiMonthPlugin, interactionPlugin]}
+        plugins={[timeGridPlugin, listPlugin, interactionPlugin]}
         initialView={fcView}
         locale={frLocale}
         firstDay={1}
@@ -149,9 +140,7 @@ export function CalendarView() {
           right: "",
         }}
         height="auto"
-        dayMaxEvents={isMobile ? 2 : 3}
-        weekNumbers={!isMobile}
-        weekText="S"
+        weekNumbers={false}
         nowIndicator
         editable={!isMobile}
         droppable={!isMobile}
@@ -159,34 +148,29 @@ export function CalendarView() {
         selectMirror
         longPressDelay={500}
         eventDisplay="block"
+        allDaySlot={false}
         events={events}
         eventDrop={handleEventDrop}
         eventClick={handleEventClick}
         select={handleDateSelect}
         eventDidMount={handleEventDidMount}
         slotMinTime="06:00:00"
-        slotMaxTime="24:00:00"
+        slotMaxTime="23:00:00"
         scrollTime="08:00:00"
         views={{
-          multiMonth2Months: {
-            type: "multiMonth",
-            duration: { months: 2 },
-            multiMonthMaxColumns: 2,
-          },
           timeGridWeek: {
             slotDuration: "01:00:00",
+            slotLabelInterval: "01:00",
+            slotLabelFormat: { hour: "2-digit", minute: "2-digit", hour12: false },
+            dayHeaderFormat: { weekday: "short", day: "numeric" },
           },
           listWeek: {
             listDayFormat: { weekday: "long", day: "numeric", month: "long" },
-            noEventsContent: "Aucun post planifié sur cette période.",
+            noEventsContent: "Aucun post cette semaine.",
           },
         }}
         buttonText={{
           today: "Aujourd'hui",
-          month: "Mois",
-          week: "Semaine",
-          day: "Jour",
-          list: "Liste",
         }}
       />
       {popover && (

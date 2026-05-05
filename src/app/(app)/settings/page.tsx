@@ -1,15 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Settings as SettingsIcon, Bell, BellOff, Send, Globe, Sparkles, Save } from "lucide-react";
+import { Bell, BellOff, Send } from "lucide-react";
 import { toast } from "sonner";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { fetchSettings, updateSettings } from "@/lib/posts";
 import {
@@ -52,9 +50,7 @@ export default function SettingsPage() {
     }
   }, []);
 
-  const update = (patch: Partial<Settings>) => {
-    setSettings((s) => (s ? { ...s, ...patch } : s));
-  };
+  const update = (patch: Partial<Settings>) => setSettings((s) => (s ? { ...s, ...patch } : s));
 
   const handleSave = async () => {
     if (!settings) return;
@@ -62,9 +58,8 @@ export default function SettingsPage() {
     try {
       await updateSettings(settings as unknown as Record<string, unknown>);
       toast.success("Réglages enregistrés");
-    } catch (err) {
+    } catch {
       toast.error("Erreur");
-      console.error(err);
     } finally {
       setSaving(false);
     }
@@ -75,7 +70,7 @@ export default function SettingsPage() {
       await subscribeToPush();
       setPushSubscribed(true);
       setPermission("granted");
-      toast.success("Notifications activées 🔔");
+      toast.success("Notifications activées");
     } catch (err) {
       toast.error("Erreur", { description: err instanceof Error ? err.message : "Réessaie" });
     }
@@ -86,188 +81,169 @@ export default function SettingsPage() {
       await unsubscribeFromPush();
       setPushSubscribed(false);
       toast.success("Notifications désactivées");
-    } catch (err) {
+    } catch {
       toast.error("Erreur");
-      console.error(err);
     }
   };
 
   const testPush = async () => {
     try {
       await sendTestNotification();
-      toast.success("Notification envoyée — vérifie tes notifs");
+      toast.success("Notification envoyée");
     } catch (err) {
       toast.error("Erreur", { description: err instanceof Error ? err.message : undefined });
     }
   };
 
   if (loading || !settings) {
-    return (
-      <div className="p-6 max-w-3xl mx-auto">
-        <Card><CardContent className="p-12 text-center text-muted-foreground">Chargement…</CardContent></Card>
-      </div>
-    );
+    return <p className="text-center text-sm text-muted-foreground py-12">Chargement…</p>;
   }
 
   return (
-    <div className="p-3 sm:p-4 md:p-6 max-w-3xl mx-auto space-y-4 sm:space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <SettingsIcon className="size-6" /> Réglages
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Personnalise tes notifications, ta voix de marque et ton funnel.
-        </p>
-      </div>
+    <div className="px-4 sm:px-6 py-5 sm:py-7 max-w-2xl mx-auto space-y-9">
+      {/* Notifications */}
+      <section className="space-y-4">
+        <div>
+          <p className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">
+            Notifications
+          </p>
+        </div>
 
-      <Card id="notifications">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="size-5" /> Notifications push
-          </CardTitle>
-          <CardDescription>
-            Reçois des rappels avant chaque post programmé, même app fermée.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <p className="font-medium text-sm">Statut des notifications</p>
-              <p className="text-xs text-muted-foreground">
-                Permission : <Badge variant="outline" className="capitalize">{permission}</Badge>
-                {pushSubscribed && <Badge variant="published" className="ml-2">Cet appareil est abonné</Badge>}
-              </p>
-            </div>
-            {pushSubscribed ? (
-              <Button variant="outline" size="sm" onClick={disablePush}>
-                <BellOff className="size-4" /> Désactiver
-              </Button>
-            ) : (
-              <Button variant="gradient" size="sm" onClick={enablePush}>
-                <Bell className="size-4" /> Activer
-              </Button>
-            )}
-          </div>
-
-          {pushSubscribed && (
-            <Button variant="outline" size="sm" onClick={testPush}>
-              <Send className="size-4" /> Envoyer une notif test
-            </Button>
-          )}
-
-          <Separator />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="reminder">Délai de rappel (minutes avant publication)</Label>
-              <Input
-                id="reminder"
-                type="number"
-                min={5}
-                max={1440}
-                value={settings.default_reminder_minutes}
-                onChange={(e) => update({ default_reminder_minutes: parseInt(e.target.value) || 60 })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="planning_time">Heure de planning quotidien</Label>
-              <Input
-                id="planning_time"
-                type="time"
-                value={settings.daily_planning_time}
-                onChange={(e) => update({ daily_planning_time: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <p className="font-medium text-sm">Activer toutes les notifications</p>
-              <p className="text-xs text-muted-foreground">Master switch — désactive tout d&apos;un coup.</p>
-            </div>
-            <Switch
-              checked={settings.notifications_enabled}
-              onCheckedChange={(c) => update({ notifications_enabled: c })}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="size-5" /> Brand & funnel
-          </CardTitle>
-          <CardDescription>Personnalise les recommandations de l&apos;app</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="skool_url">URL de ta communauté SKOOL</Label>
-            <Input
-              id="skool_url"
-              type="url"
-              placeholder="https://www.skool.com/ta-communaute"
-              value={settings.skool_url ?? ""}
-              onChange={(e) => update({ skool_url: e.target.value })}
-            />
-            <p className="text-xs text-muted-foreground">
-              <Globe className="size-3 inline mr-1" />
-              Affiché dans les CTAs BOFU pour vérification.
+        <div className="flex items-center justify-between rounded-xl border border-border p-4 bg-card">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium">Push sur cet appareil</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {pushSubscribed ? (
+                <Badge variant="published" className="text-[10px]">Activé</Badge>
+              ) : (
+                <span>Permission : {permission}</span>
+              )}
             </p>
           </div>
+          {pushSubscribed ? (
+            <Button variant="outline" size="sm" onClick={disablePush}>
+              <BellOff className="size-4" /> Désactiver
+            </Button>
+          ) : (
+            <Button variant="gradient" size="sm" onClick={enablePush}>
+              <Bell className="size-4" /> Activer
+            </Button>
+          )}
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="audience">Ton audience cible</Label>
-            <Textarea
-              id="audience"
-              placeholder="Ex: entrepreneurs francophones 25-40 ans qui veulent se libérer du salariat"
-              rows={2}
-              value={settings.target_audience ?? ""}
-              onChange={(e) => update({ target_audience: e.target.value })}
-            />
-          </div>
+        {pushSubscribed && (
+          <Button variant="outline" size="sm" onClick={testPush}>
+            <Send className="size-4" /> Tester
+          </Button>
+        )}
 
-          <div className="space-y-2">
-            <Label htmlFor="voice">Ton de voix / brand voice</Label>
-            <Textarea
-              id="voice"
-              placeholder="Ex: direct, sans bullshit, mix entre humour et expertise. On tutoie."
-              rows={3}
-              value={settings.brand_voice ?? ""}
-              onChange={(e) => update({ brand_voice: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="weekly_target">Objectif posts/semaine</Label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="reminder" className="text-xs">Délai rappel (min avant publication)</Label>
             <Input
-              id="weekly_target"
+              id="reminder"
+              type="number"
+              min={5}
+              max={1440}
+              value={settings.default_reminder_minutes}
+              onChange={(e) => update({ default_reminder_minutes: parseInt(e.target.value) || 60 })}
+              className="h-10"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="planning" className="text-xs">Heure de planning quotidien</Label>
+            <Input
+              id="planning"
+              type="time"
+              value={settings.daily_planning_time}
+              onChange={(e) => update({ daily_planning_time: e.target.value })}
+              className="h-10"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between rounded-xl border border-border p-4 bg-card">
+          <div className="flex-1">
+            <p className="text-sm font-medium">Activer toutes les notifications</p>
+            <p className="text-xs text-muted-foreground">Master switch.</p>
+          </div>
+          <Switch
+            checked={settings.notifications_enabled}
+            onCheckedChange={(c) => update({ notifications_enabled: c })}
+          />
+        </div>
+      </section>
+
+      {/* Brand */}
+      <section className="space-y-4">
+        <p className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">
+          Brand & Cible
+        </p>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="skool_url" className="text-xs">URL SKOOL</Label>
+          <Input
+            id="skool_url"
+            type="url"
+            placeholder="https://www.skool.com/…"
+            value={settings.skool_url ?? ""}
+            onChange={(e) => update({ skool_url: e.target.value })}
+            className="h-10"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="audience" className="text-xs">Audience cible</Label>
+          <Textarea
+            id="audience"
+            placeholder="Ex: entrepreneurs francophones 25-40 ans"
+            rows={2}
+            value={settings.target_audience ?? ""}
+            onChange={(e) => update({ target_audience: e.target.value })}
+            className="text-sm"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="voice" className="text-xs">Ton de voix</Label>
+          <Textarea
+            id="voice"
+            placeholder="Ex: direct, sans bullshit, mix humour et expertise."
+            rows={3}
+            value={settings.brand_voice ?? ""}
+            onChange={(e) => update({ brand_voice: e.target.value })}
+            className="text-sm"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="weekly" className="text-xs">Posts/semaine</Label>
+            <Input
+              id="weekly"
               type="number"
               min={1}
               max={30}
               value={settings.weekly_post_target}
-              onChange={(e) => update({ weekly_post_target: parseInt(e.target.value) || 7 })}
+              onChange={(e) => update({ weekly_post_target: parseInt(e.target.value) || 5 })}
+              className="h-10"
             />
-            <p className="text-xs text-muted-foreground">
-              7 = 1/jour, 14 = 2/jour. L&apos;algo Instagram récompense la régularité &gt; le volume brut.
-            </p>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="timezone">Fuseau horaire</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="tz" className="text-xs">Fuseau horaire</Label>
             <Input
-              id="timezone"
+              id="tz"
               value={settings.timezone}
               onChange={(e) => update({ timezone: e.target.value })}
+              className="h-10"
             />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
-      <div className="flex justify-end">
-        <Button variant="gradient" onClick={handleSave} disabled={saving}>
-          {saving ? <Save className="size-4 animate-pulse" /> : <Save className="size-4" />}
-          Enregistrer
+      <div className="sticky bottom-20 md:bottom-4 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-3">
+        <Button variant="gradient" onClick={handleSave} disabled={saving} className="w-full h-11">
+          {saving ? "Sauvegarde…" : "Enregistrer"}
         </Button>
       </div>
     </div>
