@@ -136,7 +136,7 @@ export function CalendarView() {
   };
 
   return (
-    <div className="rounded-xl border border-border bg-card p-3 md:p-4 shadow-sm">
+    <div className="rounded-2xl border border-border bg-card p-3 md:p-4">
       <FullCalendar
         ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, listPlugin, multiMonthPlugin, interactionPlugin]}

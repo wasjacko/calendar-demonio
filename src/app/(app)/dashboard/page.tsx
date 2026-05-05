@@ -4,7 +4,6 @@ import * as React from "react";
 import Link from "next/link";
 import {
   ArrowUpRight,
-  Plus,
   Eye,
   Heart,
   MessageCircle,
@@ -14,9 +13,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useDataStore, useUIStore } from "@/lib/store";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { CopyButton } from "@/components/copy-button";
 import { useCurrentSalve } from "@/lib/use-current-salve";
 import {
@@ -44,103 +42,92 @@ export default function DashboardPage() {
   const stats = React.useMemo(() => computeStats(posts), [posts]);
 
   return (
-    <div className="p-3 sm:p-4 md:p-6 max-w-5xl mx-auto space-y-4 sm:space-y-6">
-      {/* Header : juste salve courante + bouton */}
-      <div className="flex items-start justify-between flex-wrap gap-3">
-        <SalveSelector current={current} />
-        <Button variant="gradient" onClick={() => openEditor()} className="h-10">
-          <Plus className="size-4" /> Nouveau
-        </Button>
-      </div>
+    <div className="px-4 sm:px-6 py-5 sm:py-7 max-w-3xl mx-auto space-y-7 sm:space-y-9">
+      {/* Salve courante (manuelle) */}
+      <SalveSelector current={current} />
+
+      {/* Hero : drop URL */}
+      <button
+        onClick={() => openEditor()}
+        className="w-full text-left group"
+      >
+        <div className="rounded-2xl p-5 sm:p-6 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-colors flex items-center gap-4">
+          <div className="size-12 rounded-xl gradient-brand flex items-center justify-center shrink-0 shadow-md">
+            <LinkIcon className="size-5 text-white" strokeWidth={2.25} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-base">Ajouter une vidéo</p>
+            <p className="text-sm text-muted-foreground">Colle un lien Instagram pour commencer</p>
+          </div>
+          <ArrowUpRight className="size-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+        </div>
+      </button>
 
       {loading ? (
-        <Card><CardContent className="p-12 text-center text-muted-foreground">Chargement…</CardContent></Card>
+        <p className="text-center text-sm text-muted-foreground py-12">Chargement…</p>
       ) : (
         <>
-          {/* Drop URL principal */}
-          <button
-            onClick={() => openEditor()}
-            className="w-full text-left rounded-xl border-2 border-dashed border-border hover:border-primary/50 p-5 transition-colors group bg-card"
-          >
-            <div className="flex items-center gap-3">
-              <div className="size-11 rounded-lg gradient-brand flex items-center justify-center shrink-0">
-                <LinkIcon className="size-5 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm">Ajouter une vidéo</p>
-                <p className="text-xs text-muted-foreground">Colle une URL Instagram</p>
-              </div>
-              <ArrowUpRight className="size-5 text-muted-foreground group-hover:text-primary" />
+          {/* KPIs en row plate (pas de cards) */}
+          <section>
+            <p className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground mb-3">
+              Vue d&apos;ensemble
+            </p>
+            <div className="grid grid-cols-4 gap-2 sm:gap-3">
+              <Kpi label="Publiés" value={stats.published} />
+              <Kpi label="Vues" value={stats.totalViews} />
+              <Kpi label="Engmt" value={stats.totalEngagement} />
+              <Kpi label="Brouillons" value={stats.drafts} />
             </div>
-          </button>
+          </section>
 
-          {/* KPIs principales */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-            <Kpi label="Publiés" value={stats.published} />
-            <Kpi label="Vues totales" value={stats.totalViews} />
-            <Kpi label="Engagement" value={stats.totalEngagement} />
-            <Kpi label="Brouillons" value={stats.drafts} />
-          </div>
+          {/* Catégories — liste plate */}
+          <section>
+            <p className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground mb-3">
+              Par catégorie
+            </p>
+            <div className="space-y-px rounded-xl border border-border overflow-hidden">
+              {(Object.keys(CONTENT_TYPES) as ContentType[]).map((t) => (
+                <div key={t} className="flex items-center gap-3 px-4 py-3 bg-card hover:bg-accent/30 transition-colors">
+                  <span className={`size-2.5 rounded-full bg-${CONTENT_TYPES[t].color}`} />
+                  <span className="text-sm flex-1">{CONTENT_TYPES[t].label}</span>
+                  <span className="text-base font-semibold tabular-nums">{stats.byType[t]}</span>
+                </div>
+              ))}
+            </div>
+          </section>
 
-          {/* Vidéos par type */}
-          <Card>
-            <CardContent className="p-4 space-y-3">
-              <p className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">
-                Vidéos par catégorie
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {(Object.keys(CONTENT_TYPES) as ContentType[]).map((t) => (
-                  <div key={t} className="rounded-lg border border-border p-3">
-                    <div className="flex items-center gap-1.5">
-                      <span className={`size-2.5 rounded-full bg-${CONTENT_TYPES[t].color}`} />
-                      <span className="text-xs font-medium">{CONTENT_TYPES[t].label}</span>
-                    </div>
-                    <p className="text-xl font-bold mt-1">{stats.byType[t]}</p>
-                  </div>
+          {/* À venir */}
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">À venir</p>
+              <Link href="/calendar" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5">
+                Voir tout <ArrowUpRight className="size-3" />
+              </Link>
+            </div>
+            {stats.upcoming.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4">Aucun post programmé.</p>
+            ) : (
+              <div className="space-y-px rounded-xl border border-border overflow-hidden">
+                {stats.upcoming.slice(0, 5).map((p) => (
+                  <PostRow key={p.id} post={p} onClick={() => openEditor(p.id)} />
                 ))}
               </div>
-            </CardContent>
-          </Card>
+            )}
+          </section>
 
-          {/* Listes : à venir + résultats */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">À venir</p>
-                  <Button variant="ghost" size="sm" asChild className="h-7 text-xs">
-                    <Link href="/calendar">Voir tout <ArrowUpRight className="size-3" /></Link>
-                  </Button>
-                </div>
-                <div className="space-y-1">
-                  {stats.upcoming.length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-4 text-center">Aucun post programmé.</p>
-                  ) : (
-                    stats.upcoming.slice(0, 5).map((p) => (
-                      <PostRow key={p.id} post={p} onClick={() => openEditor(p.id)} />
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-xs uppercase tracking-wide font-semibold text-muted-foreground mb-3">Résultats récents</p>
-                <div className="space-y-1">
-                  {stats.recentPublished.length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-4 text-center">
-                      Pas encore de posts publiés avec métriques.
-                    </p>
-                  ) : (
-                    stats.recentPublished.slice(0, 5).map((p) => (
-                      <ResultRow key={p.id} post={p} onClick={() => openEditor(p.id)} />
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Résultats récents */}
+          <section>
+            <p className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground mb-3">Résultats récents</p>
+            {stats.recentPublished.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4">Pas encore de posts publiés avec métriques.</p>
+            ) : (
+              <div className="space-y-px rounded-xl border border-border overflow-hidden">
+                {stats.recentPublished.slice(0, 5).map((p) => (
+                  <ResultRow key={p.id} post={p} onClick={() => openEditor(p.id)} />
+                ))}
+              </div>
+            )}
+          </section>
         </>
       )}
     </div>
@@ -151,32 +138,32 @@ function SalveSelector({ current }: { current: ReturnType<typeof useCurrentSalve
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border hover:bg-accent transition-colors">
+        <button className="flex items-center gap-2 -ml-1 px-3 py-2 rounded-lg hover:bg-accent transition-colors group">
           <div className="text-left">
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-bold">En cours</p>
-            <p className="text-sm font-semibold">Légion {current.legion} · Salve {current.salve}</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Salve courante</p>
+            <p className="text-sm font-semibold tracking-tight">Légion {current.legion} · Salve {current.salve}</p>
           </div>
-          <ChevronDown className="size-4 text-muted-foreground" />
+          <ChevronDown className="size-4 text-muted-foreground group-hover:text-foreground" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-56">
-        <DropdownMenuLabel>Salve</DropdownMenuLabel>
+      <DropdownMenuContent align="start" className="w-52">
+        <DropdownMenuLabel className="text-[10px] uppercase tracking-wide">Salve</DropdownMenuLabel>
         {([1, 2, 3] as const).map((s) => (
           <DropdownMenuItem
             key={s}
             onClick={() => current.setCurrent({ legion: current.legion, salve: s })}
-            className={current.salve === s ? "bg-accent" : ""}
+            className={current.salve === s ? "bg-accent font-medium" : ""}
           >
             Salve {s}
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
-        <DropdownMenuLabel>Légion</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-[10px] uppercase tracking-wide">Légion</DropdownMenuLabel>
         <DropdownMenuItem onClick={() => current.setCurrent({ legion: Math.max(1, current.legion - 1), salve: current.salve })}>
-          Légion précédente
+          ← Précédente
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => current.setCurrent({ legion: current.legion + 1, salve: current.salve })}>
-          Légion suivante
+          Suivante →
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -185,18 +172,16 @@ function SalveSelector({ current }: { current: ReturnType<typeof useCurrentSalve
 
 function Kpi({ label, value }: { label: string; value: number }) {
   return (
-    <Card>
-      <CardContent className="p-3 sm:p-4">
-        <p className="text-[10px] sm:text-xs uppercase tracking-wide text-muted-foreground font-semibold">{label}</p>
-        <p className="text-xl sm:text-2xl font-bold mt-1">{formatNumber(value)}</p>
-      </CardContent>
-    </Card>
+    <div>
+      <p className="text-2xl sm:text-3xl font-bold tabular-nums tracking-tight">{formatNumber(value)}</p>
+      <p className="text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground font-medium mt-0.5">{label}</p>
+    </div>
   );
 }
 
 function PostRow({ post, onClick }: { post: Post; onClick: () => void }) {
   return (
-    <div className="w-full flex items-center gap-2 p-2 rounded-md hover:bg-accent transition-colors group">
+    <div className="w-full flex items-center gap-3 px-3 py-2.5 bg-card hover:bg-accent/30 transition-colors group">
       <button onClick={onClick} className="flex items-center gap-3 flex-1 min-w-0 text-left">
         {post.visual_url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -211,15 +196,15 @@ function PostRow({ post, onClick }: { post: Post; onClick: () => void }) {
         )}
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">{post.title}</p>
-          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
             <CalendarIcon className="size-3" />
-            {post.scheduled_for ? formatRelative(post.scheduled_for) : "Non planifié"}
+            <span>{post.scheduled_for ? formatRelative(post.scheduled_for) : "Non planifié"}</span>
             <span className="opacity-50">·</span>
-            {STATUSES[post.status].label}
+            <span>{STATUSES[post.status].label}</span>
           </p>
         </div>
         {post.content_type && (
-          <Badge variant={post.content_type.toLowerCase() as never} className="shrink-0 text-[10px]">
+          <Badge variant={post.content_type.toLowerCase() as never} className="shrink-0 text-[10px] hidden sm:inline-flex">
             {CONTENT_TYPES[post.content_type].label}
           </Badge>
         )}
@@ -237,7 +222,7 @@ function PostRow({ post, onClick }: { post: Post; onClick: () => void }) {
 function ResultRow({ post, onClick }: { post: Post; onClick: () => void }) {
   const perf = post.performance ?? {};
   return (
-    <div className="w-full flex items-center gap-2 p-2 rounded-md hover:bg-accent transition-colors group">
+    <div className="w-full flex items-center gap-3 px-3 py-2.5 bg-card hover:bg-accent/30 transition-colors group">
       <button onClick={onClick} className="flex items-center gap-3 flex-1 min-w-0 text-left">
         {post.visual_url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -268,7 +253,7 @@ function ResultRow({ post, onClick }: { post: Post; onClick: () => void }) {
 }
 
 function formatNumber(n: number | undefined): string {
-  if (n === undefined) return "—";
+  if (n === undefined || n === 0) return "0";
   if (n < 1000) return n.toString();
   if (n < 1_000_000) return (n / 1000).toFixed(n < 10_000 ? 1 : 0) + "k";
   return (n / 1_000_000).toFixed(1) + "M";

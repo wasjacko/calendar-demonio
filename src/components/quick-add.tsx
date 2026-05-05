@@ -250,17 +250,17 @@ export function QuickAdd() {
     <Dialog open={editorOpen} onOpenChange={(o) => !o && closeEditor()}>
       <DialogContent className="sm:max-w-xl p-0 overflow-hidden">
         <div className="flex flex-col max-h-[95svh] sm:max-h-[92vh]">
-          <div className="sm:hidden flex justify-center pt-2 pb-1">
+          <div className="sm:hidden flex justify-center pt-2.5 pb-1">
             <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
           </div>
 
-          <DialogHeader className="px-4 sm:px-5 pt-4 pb-3 border-b border-border">
-            <DialogTitle className="text-base sm:text-lg">
+          <DialogHeader className="px-5 sm:px-6 pt-3 sm:pt-5 pb-3 border-b border-border">
+            <DialogTitle className="text-lg font-semibold tracking-tight">
               {post ? "Modifier le post" : "Nouveau post"}
             </DialogTitle>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto px-4 sm:px-5 py-4 space-y-4">
+          <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-5 space-y-5">
             {/* 1. URL — focal */}
             <div className="space-y-1.5">
               <Label htmlFor="url" className="text-xs uppercase tracking-wide font-semibold flex items-center gap-1.5">
