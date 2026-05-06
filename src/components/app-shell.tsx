@@ -7,7 +7,6 @@ import {
   Calendar,
   LayoutDashboard,
   TrendingUp,
-  Sparkles,
   Settings,
   Plus,
   Sun,
@@ -27,7 +26,6 @@ const navItems = [
   { href: "/dashboard", label: "All For One", short: "AFO", icon: LayoutDashboard },
   { href: "/calendar", label: "Semaine", short: "Sem.", icon: Calendar },
   { href: "/strategy", label: "Stratégie", short: "Plan", icon: TrendingUp },
-  { href: "/templates", label: "Templates", short: "Tpl.", icon: Sparkles },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -81,28 +79,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </Link>
             );
           })}
-          <Link
-            href="/settings"
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-              pathname.startsWith("/settings")
-                ? "bg-accent text-foreground font-semibold"
-                : "text-muted-foreground hover:bg-accent hover:text-foreground"
-            )}
-          >
-            <Settings className="size-4 shrink-0" />
-            <span>Réglages</span>
-          </Link>
         </nav>
-
-        <div className="p-3 border-t border-border">
-          <button
-            onClick={focusAddForm}
-            className="w-full h-10 rounded-md bg-foreground text-background hover:bg-foreground/90 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.99] transition-all"
-          >
-            <Plus className="size-4" /> Nouveau
-          </button>
-        </div>
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
@@ -128,7 +105,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <Link
             href="/settings"
-            className="md:hidden size-9 rounded-md flex items-center justify-center hover:bg-accent transition-colors"
+            className="size-9 rounded-md flex items-center justify-center hover:bg-accent transition-colors"
             aria-label="Réglages"
           >
             <Settings className="size-4" />
@@ -143,7 +120,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           className="md:hidden fixed left-0 right-0 bottom-0 z-30 bg-background/95 backdrop-blur border-t border-border"
           style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         >
-          <nav className="grid grid-cols-5 items-center h-16 max-w-md mx-auto">
+          <nav className="grid grid-cols-4 items-center h-16 max-w-md mx-auto">
             <NavTab item={navItems[0]} active={pathname.startsWith(navItems[0].href)} />
             <NavTab item={navItems[1]} active={pathname.startsWith(navItems[1].href)} />
             <div className="flex items-center justify-center">
@@ -156,7 +133,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </button>
             </div>
             <NavTab item={navItems[2]} active={pathname.startsWith(navItems[2].href)} />
-            <NavTab item={navItems[3]} active={pathname.startsWith(navItems[3].href)} />
           </nav>
         </div>
       </div>
