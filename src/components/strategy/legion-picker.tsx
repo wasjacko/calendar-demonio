@@ -27,10 +27,16 @@ export function LegionPicker({
   open,
   target,
   onClose,
+  onAfterAssign,
 }: {
   open: boolean;
   target: Target | null;
   onClose: () => void;
+  /**
+   * Appelé après assignation réussie avec l'ID de la vidéo nouvellement
+   * placée dans le slot. Permet d'ouvrir directement la fiche d'état.
+   */
+  onAfterAssign?: (postId: string) => void;
 }) {
   const { posts, upsertPost } = useDataStore();
   const [search, setSearch] = React.useState("");
@@ -88,10 +94,12 @@ export function LegionPicker({
         salve_number: target.salve,
         week_slot: target.slot,
         status: post.status === "IDEA" ? "SCHEDULED" : post.status,
+        // Par défaut: nouvelle assignation = "À faire"
+        inspi_status: post.inspi_status ?? "TODO",
       });
       upsertPost(updated);
-      toast.success("Assignée");
       onClose();
+      onAfterAssign?.(updated.id);
     } catch {
       toast.error("Erreur");
     }
@@ -114,10 +122,11 @@ export function LegionPicker({
         legion_number: target.legion,
         salve_number: target.salve,
         week_slot: target.slot,
+        inspi_status: "TODO",
       });
       upsertPost(created);
-      toast.success("Ajoutée");
       onClose();
+      onAfterAssign?.(created.id);
     } catch (err) {
       toast.error("Erreur", {
         description: err instanceof Error ? err.message : undefined,

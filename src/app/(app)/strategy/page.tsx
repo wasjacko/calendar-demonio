@@ -11,12 +11,13 @@ import {
   Plus,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useDataStore, useUIStore } from "@/lib/store";
+import { useDataStore } from "@/lib/store";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CopyButton } from "@/components/copy-button";
 import { LegionPicker } from "@/components/strategy/legion-picker";
+import { StateDialog } from "@/components/strategy/state-dialog";
 import { useCurrentSalve } from "@/lib/use-current-salve";
 import { updatePost } from "@/lib/posts";
 import {
@@ -33,7 +34,6 @@ import { cn } from "@/lib/utils";
 
 export default function StrategyPage() {
   const { posts, loading, upsertPost } = useDataStore();
-  const { openEditor } = useUIStore();
   const current = useCurrentSalve();
   const [legion, setLegion] = React.useState(current.legion);
   const [pickerTarget, setPickerTarget] = React.useState<{
@@ -41,6 +41,7 @@ export default function StrategyPage() {
     salve: 1 | 2 | 3;
     slot: WeekSlot;
   } | null>(null);
+  const [stateDialogPostId, setStateDialogPostId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     setLegion(current.legion);
@@ -97,7 +98,7 @@ export default function StrategyPage() {
               legion={legion}
               salve={salveNum}
               postsBySlot={postsBySlot}
-              onEdit={(id) => openEditor(id)}
+              onEdit={(id) => setStateDialogPostId(id)}
               onSetInspiStatus={setInspiStatus}
               onPickEmpty={(slot) => setPickerTarget({ legion, salve: salveNum, slot })}
             />
@@ -109,6 +110,13 @@ export default function StrategyPage() {
         open={pickerTarget !== null}
         target={pickerTarget}
         onClose={() => setPickerTarget(null)}
+        onAfterAssign={(postId) => setStateDialogPostId(postId)}
+      />
+
+      <StateDialog
+        open={stateDialogPostId !== null}
+        postId={stateDialogPostId}
+        onClose={() => setStateDialogPostId(null)}
       />
     </div>
   );
