@@ -33,6 +33,8 @@
   --attachement-foreground: oklch(0.99 0 0);
   --valeur: oklch(0.7 0.18 145);
   --valeur-foreground: oklch(0.99 0 0);
+  --audience-valeur: oklch(0.65 0.18 250);
+  --audience-valeur-foreground: oklch(0.99 0 0);
 
   --status-idea: oklch(0.7 0.01 285);
   --status-draft: oklch(0.7 0.18 80);
@@ -66,6 +68,7 @@
   --audience: oklch(0.7 0.24 295);
   --attachement: oklch(0.72 0.22 30);
   --valeur: oklch(0.75 0.2 145);
+  --audience-valeur: oklch(0.7 0.2 250);
 }
 
 @theme inline {
@@ -101,6 +104,8 @@
   --color-attachement-foreground: var(--attachement-foreground);
   --color-valeur: var(--valeur);
   --color-valeur-foreground: var(--valeur-foreground);
+  --color-audience-valeur: var(--audience-valeur);
+  --color-audience-valeur-foreground: var(--audience-valeur-foreground);
 
   --color-status-idea: var(--status-idea);
   --color-status-draft: var(--status-draft);
@@ -300,6 +305,7 @@
 .fc-event-audience { background: var(--audience) !important; color: var(--audience-foreground) !important; }
 .fc-event-attachement { background: var(--attachement) !important; color: var(--attachement-foreground) !important; }
 .fc-event-valeur { background: var(--valeur) !important; color: var(--valeur-foreground) !important; }
+.fc-event-audience_valeur { background: var(--audience-valeur) !important; color: var(--audience-valeur-foreground) !important; }
 
 .fc .fc-event-with-image {
   padding: 0 !important;

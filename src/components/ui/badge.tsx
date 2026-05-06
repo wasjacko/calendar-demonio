@@ -14,6 +14,7 @@ const badgeVariants = cva(
         audience: "border-transparent bg-audience text-audience-foreground",
         attachement: "border-transparent bg-attachement text-attachement-foreground",
         valeur: "border-transparent bg-valeur text-valeur-foreground",
+        audience_valeur: "border-transparent bg-audience-valeur text-audience-valeur-foreground",
         idea: "border-dashed border-status-idea text-status-idea bg-transparent",
         draft: "border-transparent bg-status-draft/15 text-status-draft",
         scheduled: "border-transparent bg-status-scheduled/15 text-status-scheduled",

@@ -6,6 +6,7 @@ import { useDataStore, useUIStore } from "@/lib/store";
 import { updatePost } from "@/lib/posts";
 import { CONTENT_TYPES, FORMATS, type Post, type WeekSlot } from "@/lib/types";
 import { CopyButton } from "@/components/copy-button";
+import { VideoPicker } from "./video-picker";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -48,6 +49,7 @@ function getDayFromDate(iso: string | null): DayKey | null {
 export function KanbanWeek() {
   const { posts, upsertPost } = useDataStore();
   const { openEditor, filters } = useUIStore();
+  const [pickerDay, setPickerDay] = React.useState<DayKey | null>(null);
 
   const filtered = React.useMemo(() => {
     return posts.filter((p) => {
@@ -98,56 +100,54 @@ export function KanbanWeek() {
     }
   };
 
-  const addToDay = (dayKey: DayKey) => {
-    const slot = DAY_TO_SLOT[dayKey];
-    if (slot) {
-      // Use the predefined slot date (helps Strategy linking)
-      openEditor(null, null);
-    } else {
-      openEditor(null, null);
-    }
-  };
-
   return (
-    <div className="overflow-x-auto pb-2 -mx-4 sm:-mx-6 px-4 sm:px-6 snap-x snap-mandatory scroll-pl-4">
-      <div className="flex gap-3 min-w-max">
-        {DAYS.map((day) => {
-          const dayPosts = postsByDay[day.key];
-          const filled = dayPosts.length;
-          const done = dayPosts.filter((p) => p.status === "PUBLISHED").length;
-          return (
-            <div key={day.key} className="w-72 sm:w-64 shrink-0 snap-start">
-              <div className="flex items-baseline justify-between px-1 mb-3">
-                <p className="font-semibold tracking-tight">{day.label}</p>
-                {filled > 0 ? (
-                  <p className="text-xs text-muted-foreground tabular-nums">
-                    {done}/{filled}
-                  </p>
-                ) : (
-                  <p className="text-[11px] text-muted-foreground">—</p>
-                )}
+    <>
+      <div className="overflow-x-auto pb-2 -mx-4 sm:-mx-6 px-4 sm:px-6 snap-x snap-mandatory scroll-pl-4">
+        <div className="flex gap-3 min-w-max">
+          {DAYS.map((day) => {
+            const dayPosts = postsByDay[day.key];
+            const filled = dayPosts.length;
+            const done = dayPosts.filter((p) => p.status === "PUBLISHED").length;
+            return (
+              <div key={day.key} className="w-72 sm:w-64 shrink-0 snap-start">
+                <div className="flex items-baseline justify-between px-1 mb-3">
+                  <p className="font-semibold tracking-tight">{day.label}</p>
+                  {filled > 0 ? (
+                    <p className="text-xs text-muted-foreground tabular-nums">
+                      {done}/{filled}
+                    </p>
+                  ) : (
+                    <p className="text-[11px] text-muted-foreground">—</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {dayPosts.map((p) => (
+                    <KanbanCard
+                      key={p.id}
+                      post={p}
+                      onClick={() => openEditor(p.id)}
+                      onToggleDone={() => toggleDone(p)}
+                    />
+                  ))}
+                  <button
+                    onClick={() => setPickerDay(day.key)}
+                    className="w-full py-3 rounded-lg border border-dashed border-border text-xs text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Plus className="size-3.5" /> Choisir
+                  </button>
+                </div>
               </div>
-              <div className="space-y-2">
-                {dayPosts.map((p) => (
-                  <KanbanCard
-                    key={p.id}
-                    post={p}
-                    onClick={() => openEditor(p.id)}
-                    onToggleDone={() => toggleDone(p)}
-                  />
-                ))}
-                <button
-                  onClick={() => addToDay(day.key)}
-                  className="w-full py-3 rounded-lg border border-dashed border-border text-xs text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <Plus className="size-3.5" /> Ajouter
-                </button>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
-    </div>
+
+      <VideoPicker
+        open={pickerDay !== null}
+        dayKey={pickerDay}
+        onClose={() => setPickerDay(null)}
+      />
+    </>
   );
 }
 

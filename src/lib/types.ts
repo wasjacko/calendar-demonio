@@ -1,4 +1,4 @@
-export type ContentType = "EXPERT" | "AUDIENCE" | "ATTACHEMENT" | "VALEUR";
+export type ContentType = "EXPERT" | "AUDIENCE" | "ATTACHEMENT" | "VALEUR" | "AUDIENCE_VALEUR";
 export type ContentFormat = "REEL" | "POST" | "CAROUSEL" | "STORY" | "LIVE";
 export type ContentStatus = "IDEA" | "DRAFT" | "SCHEDULED" | "PUBLISHED" | "MISSED";
 export type WeekSlot = "MON_0631" | "TUE_1104" | "WED_1217" | "FRI_1600" | "SUN_0500";
@@ -93,6 +93,7 @@ export const CONTENT_TYPES: Record<ContentType, {
   AUDIENCE: { label: "Audience", color: "audience" },
   ATTACHEMENT: { label: "Attachement", color: "attachement" },
   VALEUR: { label: "Valeur", color: "valeur" },
+  AUDIENCE_VALEUR: { label: "Audience + Valeur", color: "audience-valeur" },
 };
 
 export const FORMATS: Record<ContentFormat, { label: string }> = {
@@ -128,26 +129,27 @@ export const WEEK_SLOTS: Record<WeekSlot, {
 export const WEEK_SLOTS_ORDER: WeekSlot[] = ["MON_0631", "TUE_1104", "WED_1217", "FRI_1600", "SUN_0500"];
 
 // Pattern Bara : type recommandé pour chaque slot d'une salve
+// AUDIENCE_VALEUR = format hybride qui donne de la valeur ET fait du volume
 export const SALVE_PATTERNS: Record<1 | 2 | 3, Record<WeekSlot, ContentType>> = {
   1: {
     MON_0631: "ATTACHEMENT",
     TUE_1104: "EXPERT",
     WED_1217: "ATTACHEMENT",
-    FRI_1600: "AUDIENCE",
+    FRI_1600: "AUDIENCE_VALEUR",
     SUN_0500: "ATTACHEMENT",
   },
   2: {
     MON_0631: "AUDIENCE",
     TUE_1104: "EXPERT",
     WED_1217: "ATTACHEMENT",
-    FRI_1600: "AUDIENCE",
+    FRI_1600: "AUDIENCE_VALEUR",
     SUN_0500: "ATTACHEMENT",
   },
   3: {
     MON_0631: "AUDIENCE",
     TUE_1104: "EXPERT",
     WED_1217: "ATTACHEMENT",
-    FRI_1600: "VALEUR",
+    FRI_1600: "AUDIENCE_VALEUR",
     SUN_0500: "ATTACHEMENT",
   },
 };
