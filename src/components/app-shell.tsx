@@ -3,14 +3,22 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Calendar, BarChart3, Archive } from "lucide-react";
+import { Home, Calendar, BarChart3, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const navItems = [
+type NavItem = {
+  href: string;
+  label: string;
+  short: string;
+  icon?: LucideIcon;
+  emoji?: string;
+};
+
+const navItems: NavItem[] = [
   { href: "/dashboard", label: "All For One", short: "Home", icon: Home },
-  { href: "/stockage", label: "Stockage", short: "Stock", icon: Archive },
   { href: "/strategy", label: "Salve", short: "Salve", icon: Calendar },
   { href: "/calendar", label: "KPI", short: "KPI", icon: BarChart3 },
+  { href: "/stockage", label: "Stockage", short: "Stock", emoji: "💧" },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -45,7 +53,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     : "text-muted-foreground hover:bg-accent hover:text-foreground"
                 )}
               >
-                <Icon className="size-4 shrink-0" />
+                {item.emoji ? (
+                  <span className="text-base leading-none shrink-0">{item.emoji}</span>
+                ) : Icon ? (
+                  <Icon className="size-4 shrink-0" />
+                ) : null}
                 <span>{item.label}</span>
               </Link>
             );
@@ -102,7 +114,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    <Icon className="size-5" strokeWidth={active ? 2.25 : 1.75} />
+                    {item.emoji ? (
+                      <span className="text-lg leading-none">{item.emoji}</span>
+                    ) : Icon ? (
+                      <Icon className="size-5" strokeWidth={active ? 2.25 : 1.75} />
+                    ) : null}
                     <span className={cn("text-[10px]", active && "font-semibold")}>
                       {item.short}
                     </span>
