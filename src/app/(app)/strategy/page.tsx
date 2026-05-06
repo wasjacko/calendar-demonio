@@ -8,6 +8,7 @@ import {
   Circle,
   CircleDashed,
   CircleCheck,
+  Plus,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useDataStore, useUIStore } from "@/lib/store";
@@ -15,6 +16,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CopyButton } from "@/components/copy-button";
+import { LegionPicker } from "@/components/strategy/legion-picker";
 import { useCurrentSalve } from "@/lib/use-current-salve";
 import { updatePost } from "@/lib/posts";
 import {
@@ -34,6 +36,11 @@ export default function StrategyPage() {
   const { openEditor } = useUIStore();
   const current = useCurrentSalve();
   const [legion, setLegion] = React.useState(current.legion);
+  const [pickerTarget, setPickerTarget] = React.useState<{
+    legion: number;
+    salve: 1 | 2 | 3;
+    slot: WeekSlot;
+  } | null>(null);
 
   React.useEffect(() => {
     setLegion(current.legion);
@@ -92,10 +99,17 @@ export default function StrategyPage() {
               postsBySlot={postsBySlot}
               onEdit={(id) => openEditor(id)}
               onSetInspiStatus={setInspiStatus}
+              onPickEmpty={(slot) => setPickerTarget({ legion, salve: salveNum, slot })}
             />
           ))}
         </div>
       )}
+
+      <LegionPicker
+        open={pickerTarget !== null}
+        target={pickerTarget}
+        onClose={() => setPickerTarget(null)}
+      />
     </div>
   );
 }
@@ -106,12 +120,14 @@ function SalveBlock({
   postsBySlot,
   onEdit,
   onSetInspiStatus,
+  onPickEmpty,
 }: {
   legion: number;
   salve: 1 | 2 | 3;
   postsBySlot: Map<string, Post>;
   onEdit: (id: string) => void;
   onSetInspiStatus: (post: Post, next: InspiStatus | null) => void;
+  onPickEmpty: (slot: WeekSlot) => void;
 }) {
   const filled = WEEK_SLOTS_ORDER.filter((s) => postsBySlot.has(`${legion}-${salve}-${s}`)).length;
 
@@ -134,6 +150,7 @@ function SalveBlock({
                 post={post}
                 onEdit={() => post && onEdit(post.id)}
                 onSetInspiStatus={onSetInspiStatus}
+                onPickEmpty={() => onPickEmpty(slot)}
               />
             );
           })}
@@ -162,26 +179,34 @@ function SlotCell({
   post,
   onEdit,
   onSetInspiStatus,
+  onPickEmpty,
 }: {
   slot: WeekSlot;
   expectedType: import("@/lib/types").ContentType;
   post: Post | undefined;
   onEdit: () => void;
   onSetInspiStatus: (post: Post, next: InspiStatus | null) => void;
+  onPickEmpty: () => void;
 }) {
   const slotInfo = WEEK_SLOTS[slot];
   const typeInfo = CONTENT_TYPES[expectedType];
 
   if (!post) {
     return (
-      <div className="rounded-lg border border-dashed border-border p-3 min-h-[110px] flex flex-col bg-muted/20">
+      <button
+        type="button"
+        onClick={onPickEmpty}
+        className="rounded-lg border border-dashed border-border p-3 min-h-[110px] flex flex-col bg-muted/20 text-left hover:border-foreground/40 hover:bg-accent/30 active:scale-[0.99] transition-all group"
+      >
         <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-bold">{slotInfo.shortLabel}</p>
         <div className="flex items-center gap-1.5 mt-1.5">
           <span className={`size-2 rounded-full bg-${typeInfo.color}`} />
           <span className="text-xs text-muted-foreground">{typeInfo.label}</span>
         </div>
-        <p className="text-[10px] text-muted-foreground/60 mt-auto pt-2">Vide</p>
-      </div>
+        <span className="mt-auto pt-2 inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground group-hover:text-foreground">
+          <Plus className="size-3" /> Choisir
+        </span>
+      </button>
     );
   }
 
