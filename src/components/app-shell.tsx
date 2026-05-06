@@ -69,10 +69,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </h1>
         </header>
 
-        {/* Main content — pb généreux pour clear la bottom nav + safe-area + respiration */}
+        {/* Main content — gros pb pour respirer au-dessus de la bottom nav */}
         <main
-          className="flex-1 overflow-auto md:pb-0"
-          style={{ paddingBottom: "calc(5rem + env(safe-area-inset-bottom))" }}
+          className="flex-1 overflow-auto md:pb-8"
+          style={{ paddingBottom: "calc(8rem + env(safe-area-inset-bottom))" }}
         >
           {children}
         </main>
