@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, Check } from "lucide-react";
+import { Loader2, Check, Link2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useDataStore } from "@/lib/store";
@@ -38,11 +38,18 @@ export function AddVideoForm() {
 
   const [loadingPreview, setLoadingPreview] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
+  const [showOptions, setShowOptions] = React.useState(false);
 
   const setUrl = (v: string) => setDraft((d) => ({ ...d, url: v }));
   const setCategory = (v: ContentType | null) =>
     setDraft((d) => ({ ...d, category: v }));
   const setNotes = (v: string) => setDraft((d) => ({ ...d, notes: v }));
+
+  // Si le brouillon contient déjà des options (catégorie ou notes), on ouvre la
+  // section "options" automatiquement à l'hydration.
+  React.useEffect(() => {
+    if (category || notes) setShowOptions(true);
+  }, [category, notes]);
 
   const fetchPreview = async (u: string) => {
     if (!u.startsWith("http")) return;
@@ -73,6 +80,12 @@ export function AddVideoForm() {
 
   const reset = () => {
     clearDraft();
+    setShowOptions(false);
+    urlRef.current?.focus();
+  };
+
+  const clearUrl = () => {
+    setDraft((d) => ({ ...d, url: "", preview: null }));
     urlRef.current?.focus();
   };
 
@@ -102,6 +115,7 @@ export function AddVideoForm() {
       upsertPost(created);
       toast.success("Vidéo ajoutée au pool");
       clearDraft();
+      setShowOptions(false);
     } catch (err) {
       toast.error("Erreur", {
         description: err instanceof Error ? err.message : undefined,
@@ -111,35 +125,67 @@ export function AddVideoForm() {
     }
   };
 
+  const hasContent = !!(url || preview || category || notes);
+
   return (
     <div
       id="add-video"
-      className="rounded-2xl border border-border bg-card/95 backdrop-blur-md p-5 sm:p-6 space-y-4 shadow-sm"
+      className="rounded-2xl border border-border bg-card/95 backdrop-blur-md p-4 sm:p-5 space-y-3 shadow-sm"
     >
-      <p className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">
-        Ajouter
-      </p>
+      {/* Titre clair */}
+      <div className="flex items-baseline justify-between">
+        <h2 className="text-base font-semibold tracking-tight">
+          Nouvelle vidéo
+        </h2>
+        {hasContent && !saving && (
+          <button
+            type="button"
+            onClick={reset}
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            Effacer
+          </button>
+        )}
+      </div>
 
-      {/* URL input — minimal */}
-      <input
-        ref={urlRef}
-        type="url"
-        placeholder="Colle un lien Instagram…"
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
-        onPaste={onPaste}
-        onBlur={onBlur}
-        className="w-full bg-transparent border-0 border-b border-border py-2 text-base sm:text-sm placeholder:text-muted-foreground/70 focus:outline-none focus:border-foreground transition-colors"
-      />
+      {/* URL input — gros, contraint, avec icône claire */}
+      <div className="relative">
+        <Link2 className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+        <input
+          ref={urlRef}
+          type="url"
+          inputMode="url"
+          autoComplete="off"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
+          placeholder="Colle un lien Instagram, TikTok, YouTube…"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          onPaste={onPaste}
+          onBlur={onBlur}
+          className="w-full h-12 pl-10 pr-10 rounded-xl bg-muted/50 border border-transparent text-base sm:text-sm placeholder:text-muted-foreground/70 focus:outline-none focus:bg-background focus:border-foreground/30 transition-colors"
+        />
+        {url && (
+          <button
+            type="button"
+            onClick={clearUrl}
+            aria-label="Effacer l'URL"
+            className="absolute right-3 top-1/2 -translate-y-1/2 size-6 rounded-full bg-muted-foreground/10 hover:bg-muted-foreground/20 flex items-center justify-center"
+          >
+            <X className="size-3.5 text-muted-foreground" />
+          </button>
+        )}
+      </div>
 
       {/* Loader */}
       {loadingPreview && (
-        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-          <Loader2 className="size-3 animate-spin" /> Analyse de l&apos;URL…
+        <p className="text-xs text-muted-foreground flex items-center gap-1.5 px-1">
+          <Loader2 className="size-3 animate-spin" /> Aperçu en cours…
         </p>
       )}
 
-      {/* Preview (Notion-style block) */}
+      {/* Preview */}
       {preview && !loadingPreview && (
         <a
           href={url}
@@ -180,77 +226,84 @@ export function AddVideoForm() {
         </a>
       )}
 
-      {/* Catégorie pills */}
-      <div className="space-y-1.5">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium">
-          Catégorie
-        </p>
-        <div className="flex flex-wrap gap-1.5">
-          {(Object.keys(CONTENT_TYPES) as ContentType[]).map((t) => {
-            const isActive = category === t;
-            return (
-              <button
-                key={t}
-                type="button"
-                onClick={() => setCategory(isActive ? null : t)}
-                className={cn(
-                  "px-2.5 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5",
-                  isActive
-                    ? `bg-${CONTENT_TYPES[t].color} text-white`
-                    : "bg-muted/50 hover:bg-accent text-foreground"
-                )}
-              >
-                <span
-                  className={cn(
-                    "size-1.5 rounded-full",
-                    isActive ? "bg-white/80" : `bg-${CONTENT_TYPES[t].color}`
-                  )}
-                />
-                {CONTENT_TYPES[t].label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Notes — minimal */}
-      <textarea
-        placeholder="Notes (facultatif)…"
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
-        rows={2}
-        className="w-full bg-transparent border-0 py-1 text-sm placeholder:text-muted-foreground/70 focus:outline-none resize-none"
-      />
-
-      {/* Action */}
-      <div className="flex items-center gap-2 pt-1">
-        <Button
+      {/* Bouton "Ajouter des détails" — repli les options en mode rapide */}
+      {!showOptions && (
+        <button
           type="button"
-          variant="default"
-          onClick={onSave}
-          disabled={!canSave}
-          className="h-10"
+          onClick={() => setShowOptions(true)}
+          className="w-full text-xs text-muted-foreground hover:text-foreground py-1 transition-colors"
         >
-          {saving ? (
-            <>
-              <Loader2 className="size-4 animate-spin" /> Ajout…
-            </>
-          ) : (
-            <>
-              <Check className="size-4" /> Ajouter
-            </>
-          )}
-        </Button>
-        {(url || preview || category || notes) && !saving && (
-          <button
-            type="button"
-            onClick={reset}
-            className="text-xs text-muted-foreground hover:text-foreground"
-          >
-            Effacer
-          </button>
+          + Ajouter une catégorie ou des notes
+        </button>
+      )}
+
+      {/* Options dépliables : catégorie + notes */}
+      {showOptions && (
+        <div className="space-y-3 pt-1">
+          {/* Catégorie pills */}
+          <div className="space-y-1.5">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+              Catégorie
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {(Object.keys(CONTENT_TYPES) as ContentType[]).map((t) => {
+                const isActive = category === t;
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setCategory(isActive ? null : t)}
+                    className={cn(
+                      "px-2.5 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5",
+                      isActive
+                        ? `bg-${CONTENT_TYPES[t].color} text-white`
+                        : "bg-muted/50 hover:bg-accent text-foreground"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "size-1.5 rounded-full",
+                        isActive
+                          ? "bg-white/80"
+                          : `bg-${CONTENT_TYPES[t].color}`
+                      )}
+                    />
+                    {CONTENT_TYPES[t].label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Notes */}
+          <textarea
+            placeholder="Notes (facultatif)…"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={2}
+            className="w-full rounded-xl bg-muted/50 border border-transparent px-3 py-2 text-sm placeholder:text-muted-foreground/70 focus:outline-none focus:bg-background focus:border-foreground/30 transition-colors resize-none"
+          />
+        </div>
+      )}
+
+      {/* CTA principal — large, plein largeur, évident */}
+      <Button
+        type="button"
+        variant="default"
+        onClick={onSave}
+        disabled={!canSave}
+        className="w-full h-12 text-base font-semibold rounded-xl"
+      >
+        {saving ? (
+          <>
+            <Loader2 className="size-4 animate-spin" /> Ajout…
+          </>
+        ) : (
+          <>
+            <Check className="size-4" /> Ajouter au pool
+          </>
         )}
-      </div>
+      </Button>
     </div>
   );
 }
