@@ -77,12 +77,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
 
-        {/* Mobile bottom nav — 3 items */}
+        {/* Mobile bottom nav — flottante, arrondie, avec pill indicator */}
         <div
-          className="md:hidden fixed left-0 right-0 bottom-0 z-30 bg-background/95 backdrop-blur border-t border-border"
-          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+          className="md:hidden fixed left-3 right-3 z-30"
+          style={{ bottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
         >
-          <nav className="grid grid-cols-3 items-center h-16 max-w-md mx-auto">
+          <nav className="grid grid-cols-3 items-center h-16 bg-card/95 backdrop-blur-md border border-border rounded-2xl shadow-lg max-w-md mx-auto">
             {navItems.map((item) => {
               const active = pathname === item.href || pathname.startsWith(item.href + "/");
               const Icon = item.icon;
@@ -90,15 +90,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={cn(
-                    "flex flex-col items-center justify-center gap-0.5 h-full transition-colors",
-                    active ? "text-foreground" : "text-muted-foreground"
-                  )}
+                  className="flex items-center justify-center h-full transition-transform active:scale-95"
                 >
-                  <Icon className="size-5" strokeWidth={active ? 2.25 : 1.75} />
-                  <span className={cn("text-[11px]", active && "font-semibold")}>
-                    {item.short}
-                  </span>
+                  <div
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-0.5 px-4 py-2 rounded-xl transition-all",
+                      active
+                        ? "bg-foreground text-background"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Icon className="size-5" strokeWidth={active ? 2.25 : 1.75} />
+                    <span className={cn("text-[10px]", active && "font-semibold")}>
+                      {item.short}
+                    </span>
+                  </div>
                 </Link>
               );
             })}

@@ -109,7 +109,7 @@ export function KanbanWeek() {
                 ))}
                 <button
                   onClick={() => setPickerDay(day.key)}
-                  className="w-full flex items-center gap-2 px-3 py-3 rounded-xl border border-dashed border-border text-sm text-muted-foreground hover:border-foreground/40 hover:text-foreground hover:bg-accent/30 transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-3 rounded-2xl border border-dashed border-border text-sm text-muted-foreground hover:border-foreground/40 hover:text-foreground hover:bg-accent/30 transition-colors"
                 >
                   <Plus className="size-4" />
                   <span>Choisir une vidéo</span>
@@ -144,7 +144,7 @@ function KanbanCard({
   return (
     <div
       className={cn(
-        "rounded-xl border border-border bg-card overflow-hidden transition-opacity",
+        "rounded-2xl border border-border bg-card overflow-hidden transition-opacity",
         isDone && "opacity-60"
       )}
     >

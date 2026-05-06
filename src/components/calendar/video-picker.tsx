@@ -135,16 +135,20 @@ export function VideoPicker({
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-3 py-3">
-            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground px-2 mb-2">
-              All For One ({filtered.length})
-            </p>
-            {filtered.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8 px-4">
-                {pool.length === 0
-                  ? "Pool vide. Crée une nouvelle vidéo ci-dessous."
-                  : "Aucune vidéo trouvée."}
+          <div className="flex-1 overflow-y-auto px-3 py-3 flex flex-col min-h-[14rem]">
+            {filtered.length > 0 && (
+              <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground px-2 mb-2">
+                All For One ({filtered.length})
               </p>
+            )}
+            {filtered.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center px-6">
+                <p className="text-sm text-muted-foreground text-center">
+                  {pool.length === 0
+                    ? "Pool vide. Crée une nouvelle vidéo ci-dessous."
+                    : "Aucune vidéo trouvée."}
+                </p>
+              </div>
             ) : (
               <div className="space-y-1">
                 {filtered.map((video) => {
@@ -153,7 +157,7 @@ export function VideoPicker({
                     <button
                       key={video.id}
                       onClick={() => assign(video.id)}
-                      className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-accent transition-colors text-left active:scale-[0.99]"
+                      className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-accent transition-colors text-left active:scale-[0.99]"
                     >
                       {video.visual_url ? (
                         // eslint-disable-next-line @next/next/no-img-element

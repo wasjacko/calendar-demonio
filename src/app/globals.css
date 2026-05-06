@@ -28,7 +28,7 @@
   --border: oklch(0.93 0 0);               /* very subtle */
   --input: oklch(0.93 0 0);
   --ring: oklch(0.4 0 0);
-  --radius: 0.5rem;                        /* sharper, Notion-like */
+  --radius: 1rem;                          /* arrondi plus joyful */
 
   /* Content types: very desaturated, subtle hint */
   --expert: oklch(0.42 0.04 220);
