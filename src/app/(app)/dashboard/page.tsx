@@ -1,19 +1,22 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import {
-  ArrowUpRight,
+  Plus,
   Eye,
   Heart,
   MessageCircle,
   Bookmark,
-  Calendar as CalendarIcon,
   Link as LinkIcon,
+  ArrowUpRight,
   ChevronDown,
+  Search,
+  Filter,
+  X,
 } from "lucide-react";
 import { useDataStore, useUIStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { CopyButton } from "@/components/copy-button";
 import { useCurrentSalve } from "@/lib/use-current-salve";
@@ -22,9 +25,10 @@ import {
   FORMATS,
   STATUSES,
   type ContentType,
+  type ContentStatus,
   type Post,
 } from "@/lib/types";
-import { formatRelative, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,19 +38,53 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export default function DashboardPage() {
+export default function AllForOnePage() {
   const { posts, loading } = useDataStore();
   const { openEditor } = useUIStore();
   const current = useCurrentSalve();
 
+  const [search, setSearch] = React.useState("");
+  const [typeFilter, setTypeFilter] = React.useState<ContentType[]>([]);
+  const [statusFilter, setStatusFilter] = React.useState<ContentStatus[]>([]);
+
   const stats = React.useMemo(() => computeStats(posts), [posts]);
 
-  return (
-    <div className="px-4 sm:px-6 py-5 sm:py-7 max-w-3xl mx-auto space-y-7 sm:space-y-9">
-      {/* Salve courante (manuelle) */}
-      <SalveSelector current={current} />
+  const filtered = React.useMemo(() => {
+    return posts
+      .filter((p) => {
+        if (typeFilter.length > 0 && (!p.content_type || !typeFilter.includes(p.content_type))) return false;
+        if (statusFilter.length > 0 && !statusFilter.includes(p.status)) return false;
+        if (search.trim() !== "") {
+          const q = search.toLowerCase();
+          if (!p.title.toLowerCase().includes(q) && !(p.caption ?? "").toLowerCase().includes(q)) return false;
+        }
+        return true;
+      })
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [posts, typeFilter, statusFilter, search]);
 
-      {/* Hero : drop URL */}
+  const toggleType = (t: ContentType) => {
+    setTypeFilter((s) => (s.includes(t) ? s.filter((x) => x !== t) : [...s, t]));
+  };
+  const toggleStatus = (s: ContentStatus) => {
+    setStatusFilter((arr) => (arr.includes(s) ? arr.filter((x) => x !== s) : [...arr, s]));
+  };
+  const activeFilters = typeFilter.length + statusFilter.length;
+
+  return (
+    <div className="px-4 sm:px-6 py-5 sm:py-7 max-w-5xl mx-auto space-y-7 sm:space-y-9">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+            All For One
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Toutes tes vidéos</h1>
+        </div>
+        <SalveSelector current={current} />
+      </div>
+
+      {/* Drop URL hero */}
       <button
         onClick={() => openEditor()}
         className="w-full text-left group"
@@ -59,7 +97,7 @@ export default function DashboardPage() {
             <p className="font-semibold text-base">Ajouter une vidéo</p>
             <p className="text-sm text-muted-foreground">Colle un lien Instagram pour commencer</p>
           </div>
-          <ArrowUpRight className="size-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+          <Plus className="size-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
         </div>
       </button>
 
@@ -67,67 +105,95 @@ export default function DashboardPage() {
         <p className="text-center text-sm text-muted-foreground py-12">Chargement…</p>
       ) : (
         <>
-          {/* KPIs en row plate (pas de cards) */}
-          <section>
-            <p className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground mb-3">
-              Vue d&apos;ensemble
-            </p>
-            <div className="grid grid-cols-4 gap-2 sm:gap-3">
-              <Kpi label="Publiés" value={stats.published} />
-              <Kpi label="Vues" value={stats.totalViews} />
-              <Kpi label="Engmt" value={stats.totalEngagement} />
-              <Kpi label="Brouillons" value={stats.drafts} />
-            </div>
-          </section>
+          {/* KPIs */}
+          <div className="grid grid-cols-4 gap-2 sm:gap-3">
+            <Kpi label="Total" value={posts.length} />
+            <Kpi label="Faites" value={stats.published} />
+            <Kpi label="Vues" value={stats.totalViews} />
+            <Kpi label="Engmt" value={stats.totalEngagement} />
+          </div>
 
-          {/* Catégories — liste plate */}
-          <section>
-            <p className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground mb-3">
-              Par catégorie
-            </p>
-            <div className="space-y-px rounded-xl border border-border overflow-hidden">
-              {(Object.keys(CONTENT_TYPES) as ContentType[]).map((t) => (
-                <div key={t} className="flex items-center gap-3 px-4 py-3 bg-card hover:bg-accent/30 transition-colors">
-                  <span className={`size-2.5 rounded-full bg-${CONTENT_TYPES[t].color}`} />
-                  <span className="text-sm flex-1">{CONTENT_TYPES[t].label}</span>
-                  <span className="text-base font-semibold tabular-nums">{stats.byType[t]}</span>
+          {/* Filters */}
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-10"
+              />
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="default" className="h-10 px-3 shrink-0">
+                  <Filter className="size-4" />
+                  {activeFilters > 0 && (
+                    <Badge variant="default" className="ml-1 h-5 px-1.5">{activeFilters}</Badge>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-72 p-3">
+                <DropdownMenuLabel className="px-0 pb-2 text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">Catégorie</DropdownMenuLabel>
+                <div className="flex flex-wrap gap-1.5">
+                  {(Object.keys(CONTENT_TYPES) as ContentType[]).map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => toggleType(t)}
+                      className={cn(
+                        "px-2.5 py-1 rounded-full text-xs font-medium border transition-colors flex items-center gap-1.5",
+                        typeFilter.includes(t)
+                          ? `bg-${CONTENT_TYPES[t].color} text-white border-transparent`
+                          : "border-border hover:bg-accent"
+                      )}
+                    >
+                      <span className={cn("size-1.5 rounded-full", typeFilter.includes(t) ? "bg-white/80" : `bg-${CONTENT_TYPES[t].color}`)} />
+                      {CONTENT_TYPES[t].label}
+                    </button>
+                  ))}
                 </div>
+                <DropdownMenuSeparator className="my-3" />
+                <DropdownMenuLabel className="px-0 pb-2 text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">Statut</DropdownMenuLabel>
+                <div className="flex flex-wrap gap-1.5">
+                  {(Object.keys(STATUSES) as ContentStatus[]).map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => toggleStatus(s)}
+                      className={cn(
+                        "px-2.5 py-1 rounded-full text-xs font-medium border transition-colors",
+                        statusFilter.includes(s)
+                          ? "bg-primary text-primary-foreground border-transparent"
+                          : "border-border hover:bg-accent"
+                      )}
+                    >
+                      {STATUSES[s].label}
+                    </button>
+                  ))}
+                </div>
+                {activeFilters > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full mt-3"
+                    onClick={() => { setTypeFilter([]); setStatusFilter([]); }}
+                  >
+                    <X className="size-3" /> Réinitialiser
+                  </Button>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Grille des vidéos */}
+          {filtered.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-12">Aucune vidéo.</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {filtered.map((p) => (
+                <VideoCard key={p.id} post={p} onClick={() => openEditor(p.id)} />
               ))}
             </div>
-          </section>
-
-          {/* À venir */}
-          <section>
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">À venir</p>
-              <Link href="/calendar" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5">
-                Voir tout <ArrowUpRight className="size-3" />
-              </Link>
-            </div>
-            {stats.upcoming.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4">Aucun post programmé.</p>
-            ) : (
-              <div className="space-y-px rounded-xl border border-border overflow-hidden">
-                {stats.upcoming.slice(0, 5).map((p) => (
-                  <PostRow key={p.id} post={p} onClick={() => openEditor(p.id)} />
-                ))}
-              </div>
-            )}
-          </section>
-
-          {/* Résultats récents */}
-          <section>
-            <p className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground mb-3">Résultats récents</p>
-            {stats.recentPublished.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4">Pas encore de posts publiés avec métriques.</p>
-            ) : (
-              <div className="space-y-px rounded-xl border border-border overflow-hidden">
-                {stats.recentPublished.slice(0, 5).map((p) => (
-                  <ResultRow key={p.id} post={p} onClick={() => openEditor(p.id)} />
-                ))}
-              </div>
-            )}
-          </section>
+          )}
         </>
       )}
     </div>
@@ -138,15 +204,15 @@ function SalveSelector({ current }: { current: ReturnType<typeof useCurrentSalve
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 -ml-1 px-3 py-2 rounded-lg hover:bg-accent transition-colors group">
+        <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors group">
           <div className="text-left">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Salve courante</p>
-            <p className="text-sm font-semibold tracking-tight">Légion {current.legion} · Salve {current.salve}</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Salve</p>
+            <p className="text-sm font-semibold tracking-tight">L{current.legion} · S{current.salve}</p>
           </div>
           <ChevronDown className="size-4 text-muted-foreground group-hover:text-foreground" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-52">
+      <DropdownMenuContent align="end" className="w-52">
         <DropdownMenuLabel className="text-[10px] uppercase tracking-wide">Salve</DropdownMenuLabel>
         {([1, 2, 3] as const).map((s) => (
           <DropdownMenuItem
@@ -179,74 +245,56 @@ function Kpi({ label, value }: { label: string; value: number }) {
   );
 }
 
-function PostRow({ post, onClick }: { post: Post; onClick: () => void }) {
-  return (
-    <div className="w-full flex items-center gap-3 px-3 py-2.5 bg-card hover:bg-accent/30 transition-colors group">
-      <button onClick={onClick} className="flex items-center gap-3 flex-1 min-w-0 text-left">
-        {post.visual_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={post.visual_url} alt="" className="size-10 rounded-md object-cover shrink-0" onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")} />
-        ) : (
-          <div className={cn(
-            "size-10 rounded-md flex items-center justify-center shrink-0 text-[10px] font-semibold",
-            post.content_type ? `bg-${CONTENT_TYPES[post.content_type].color}/15 text-${CONTENT_TYPES[post.content_type].color}` : "bg-muted text-muted-foreground"
-          )}>
-            {FORMATS[post.format].label.slice(0, 4)}
-          </div>
-        )}
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{post.title}</p>
-          <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-            <CalendarIcon className="size-3" />
-            <span>{post.scheduled_for ? formatRelative(post.scheduled_for) : "Non planifié"}</span>
-            <span className="opacity-50">·</span>
-            <span>{STATUSES[post.status].label}</span>
-          </p>
-        </div>
-        {post.content_type && (
-          <Badge variant={post.content_type.toLowerCase() as never} className="shrink-0 text-[10px] hidden sm:inline-flex">
-            {CONTENT_TYPES[post.content_type].label}
-          </Badge>
-        )}
-      </button>
-      {post.source_url && (
-        <CopyButton
-          value={post.source_url}
-          className="shrink-0 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
-        />
-      )}
-    </div>
-  );
-}
-
-function ResultRow({ post, onClick }: { post: Post; onClick: () => void }) {
+function VideoCard({ post, onClick }: { post: Post; onClick: () => void }) {
+  const typeInfo = post.content_type ? CONTENT_TYPES[post.content_type] : null;
+  const isDone = post.status === "PUBLISHED";
   const perf = post.performance ?? {};
+
   return (
-    <div className="w-full flex items-center gap-3 px-3 py-2.5 bg-card hover:bg-accent/30 transition-colors group">
-      <button onClick={onClick} className="flex items-center gap-3 flex-1 min-w-0 text-left">
+    <div className={cn(
+      "rounded-xl border border-border bg-card overflow-hidden hover:ring-2 hover:ring-primary/30 transition-all group",
+      isDone && "opacity-75"
+    )}>
+      <button onClick={onClick} className="block w-full text-left">
         {post.visual_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={post.visual_url} alt="" className="size-10 rounded-md object-cover shrink-0" onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")} />
+          <div className="relative aspect-[4/5] bg-muted">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={post.visual_url}
+              alt=""
+              className="absolute inset-0 size-full object-cover"
+              onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")}
+            />
+            {typeInfo && (
+              <span className={cn("absolute top-2 left-2 size-2.5 rounded-full ring-2 ring-white/80", `bg-${typeInfo.color}`)} />
+            )}
+            <Badge variant={post.status.toLowerCase() as never} className="absolute top-2 right-2 text-[9px]">
+              {STATUSES[post.status].label}
+            </Badge>
+          </div>
         ) : (
-          <div className="size-10 rounded-md flex items-center justify-center bg-muted text-muted-foreground shrink-0 text-[10px] font-semibold">
-            {FORMATS[post.format].label.slice(0, 4)}
+          <div className={cn("aspect-[4/5] flex items-center justify-center text-sm font-semibold", typeInfo ? `bg-${typeInfo.color}/15 text-${typeInfo.color}` : "bg-muted text-muted-foreground")}>
+            {FORMATS[post.format].label}
           </div>
         )}
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{post.title}</p>
-          <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
-            {perf.views !== undefined && <span className="flex items-center gap-0.5"><Eye className="size-3" /> {formatNumber(perf.views)}</span>}
-            {perf.likes !== undefined && <span className="flex items-center gap-0.5"><Heart className="size-3" /> {formatNumber(perf.likes)}</span>}
-            {perf.comments !== undefined && <span className="flex items-center gap-0.5"><MessageCircle className="size-3" /> {formatNumber(perf.comments)}</span>}
-            {perf.saves !== undefined && <span className="flex items-center gap-0.5"><Bookmark className="size-3" /> {formatNumber(perf.saves)}</span>}
-          </div>
+        <div className="p-2.5 space-y-1">
+          <p className={cn("text-xs font-medium leading-snug line-clamp-2", isDone && "line-through")}>
+            {post.title}
+          </p>
+          {(perf.views || perf.likes) && (
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+              {perf.views !== undefined && <span className="flex items-center gap-0.5"><Eye className="size-2.5" /> {formatNumber(perf.views)}</span>}
+              {perf.likes !== undefined && <span className="flex items-center gap-0.5"><Heart className="size-2.5" /> {formatNumber(perf.likes)}</span>}
+              {perf.comments !== undefined && <span className="flex items-center gap-0.5"><MessageCircle className="size-2.5" /> {formatNumber(perf.comments)}</span>}
+              {perf.saves !== undefined && <span className="flex items-center gap-0.5"><Bookmark className="size-2.5" /> {formatNumber(perf.saves)}</span>}
+            </div>
+          )}
         </div>
       </button>
       {post.source_url && (
-        <CopyButton
-          value={post.source_url}
-          className="shrink-0 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
-        />
+        <div className="absolute top-2 right-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+          <CopyButton value={post.source_url} className="bg-background/90 backdrop-blur-sm rounded shadow-sm" size="xs" />
+        </div>
       )}
     </div>
   );
@@ -260,43 +308,14 @@ function formatNumber(n: number | undefined): string {
 }
 
 function computeStats(posts: Post[]) {
-  const now = new Date();
-
-  const upcoming = posts
-    .filter((p) => p.scheduled_for && new Date(p.scheduled_for) >= now && p.status !== "PUBLISHED" && p.status !== "MISSED")
-    .sort((a, b) => new Date(a.scheduled_for!).getTime() - new Date(b.scheduled_for!).getTime());
-
-  const recentPublished = posts
-    .filter((p) => p.status === "PUBLISHED")
-    .sort((a, b) => {
-      const aTime = a.published_at ?? a.scheduled_for ?? "";
-      const bTime = b.published_at ?? b.scheduled_for ?? "";
-      return bTime.localeCompare(aTime);
-    });
-
   const totalViews = posts.reduce((sum, p) => sum + (p.performance?.views ?? 0), 0);
   const totalEngagement = posts.reduce((sum, p) => {
     const perf = p.performance ?? {};
     return sum + (perf.likes ?? 0) + (perf.comments ?? 0) + (perf.saves ?? 0);
   }, 0);
-
-  const byType: Record<ContentType, number> = {
-    EXPERT: 0,
-    AUDIENCE: 0,
-    ATTACHEMENT: 0,
-    VALEUR: 0,
-  };
-  posts.forEach((p) => {
-    if (p.content_type) byType[p.content_type]++;
-  });
-
   return {
-    drafts: posts.filter((p) => p.status === "IDEA" || p.status === "DRAFT").length,
     published: posts.filter((p) => p.status === "PUBLISHED").length,
     totalViews,
     totalEngagement,
-    upcoming,
-    recentPublished,
-    byType,
   };
 }

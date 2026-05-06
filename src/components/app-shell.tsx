@@ -26,10 +26,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", short: "Home", icon: LayoutDashboard },
-  { href: "/calendar", label: "Calendrier", short: "Cal.", icon: Calendar },
+  { href: "/dashboard", label: "All For One", short: "AFO", icon: LayoutDashboard },
+  { href: "/calendar", label: "Semaine", short: "Sem.", icon: Calendar },
   { href: "/strategy", label: "Stratégie", short: "Plan", icon: TrendingUp },
-  { href: "/templates", label: "Templates", short: "Templ.", icon: Sparkles },
+  { href: "/templates", label: "Templates", short: "Tpl.", icon: Sparkles },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {

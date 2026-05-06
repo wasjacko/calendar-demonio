@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { CalendarView } from "@/components/calendar/calendar-view";
+import { KanbanWeek } from "@/components/calendar/kanban-week";
 import { CalendarToolbar } from "@/components/calendar/calendar-toolbar";
 import { useUIStore, useDataStore } from "@/lib/store";
 
@@ -27,7 +27,7 @@ function CalendarPageInner() {
       {loading ? (
         <p className="text-center text-sm text-muted-foreground py-12">Chargement…</p>
       ) : (
-        <CalendarView />
+        <KanbanWeek />
       )}
     </div>
   );
