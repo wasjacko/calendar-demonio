@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Calendar,
   LayoutDashboard,
@@ -15,9 +15,7 @@ import {
   Monitor,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useUIStore } from "@/lib/store";
 import { useTheme } from "@/components/theme-provider";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,11 +32,23 @@ const navItems = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { openEditor } = useUIStore();
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
 
   const currentItem = navItems.find((i) => pathname.startsWith(i.href));
   const pageTitle = currentItem?.label ?? (pathname.startsWith("/settings") ? "Réglages" : "Editorial");
+
+  const focusAddForm = () => {
+    if (pathname !== "/dashboard") router.push("/dashboard");
+    setTimeout(() => {
+      const el = document.getElementById("add-video");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        const input = el.querySelector("input[type=url]") as HTMLInputElement | null;
+        input?.focus();
+      }
+    }, 200);
+  };
 
   return (
     <div className="flex min-h-svh">
@@ -86,9 +96,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="p-3 border-t border-border">
-          <Button variant="gradient" className="w-full" onClick={() => openEditor()}>
+          <button
+            onClick={focusAddForm}
+            className="w-full h-10 rounded-md gradient-brand text-white text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.99] transition-transform"
+          >
             <Plus className="size-4" /> Nouveau
-          </Button>
+          </button>
         </div>
       </aside>
 
@@ -135,9 +148,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <NavTab item={navItems[1]} active={pathname.startsWith(navItems[1].href)} />
             <div className="flex items-center justify-center">
               <button
-                onClick={() => openEditor()}
+                onClick={focusAddForm}
                 className="size-12 rounded-full gradient-brand flex items-center justify-center shadow-lg shadow-primary/30 active:scale-95 transition-transform -translate-y-2"
-                aria-label="Nouveau post"
+                aria-label="Nouvelle vidéo"
               >
                 <Plus className="size-5 text-white" strokeWidth={2.5} />
               </button>

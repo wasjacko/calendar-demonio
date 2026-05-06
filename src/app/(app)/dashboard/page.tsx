@@ -2,14 +2,10 @@
 
 import * as React from "react";
 import {
-  Plus,
   Eye,
   Heart,
   MessageCircle,
   Bookmark,
-  Link as LinkIcon,
-  ArrowUpRight,
-  ChevronDown,
   Search,
   Filter,
   X,
@@ -19,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { CopyButton } from "@/components/copy-button";
-import { useCurrentSalve } from "@/lib/use-current-salve";
+import { AddVideoForm } from "@/components/add-video-form";
 import {
   CONTENT_TYPES,
   FORMATS,
@@ -32,7 +28,6 @@ import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -41,7 +36,6 @@ import {
 export default function AllForOnePage() {
   const { posts, loading } = useDataStore();
   const { openEditor } = useUIStore();
-  const current = useCurrentSalve();
 
   const [search, setSearch] = React.useState("");
   const [typeFilter, setTypeFilter] = React.useState<ContentType[]>([]);
@@ -56,7 +50,9 @@ export default function AllForOnePage() {
         if (statusFilter.length > 0 && !statusFilter.includes(p.status)) return false;
         if (search.trim() !== "") {
           const q = search.toLowerCase();
-          if (!p.title.toLowerCase().includes(q) && !(p.caption ?? "").toLowerCase().includes(q)) return false;
+          if (!p.title.toLowerCase().includes(q) &&
+              !(p.notes ?? "").toLowerCase().includes(q) &&
+              !(p.caption ?? "").toLowerCase().includes(q)) return false;
         }
         return true;
       })
@@ -72,34 +68,17 @@ export default function AllForOnePage() {
   const activeFilters = typeFilter.length + statusFilter.length;
 
   return (
-    <div className="px-4 sm:px-6 py-5 sm:py-7 max-w-5xl mx-auto space-y-7 sm:space-y-9">
+    <div className="px-4 sm:px-6 py-5 sm:py-7 max-w-3xl mx-auto space-y-7">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-            All For One
-          </p>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Toutes tes vidéos</h1>
-        </div>
-        <SalveSelector current={current} />
+      <div>
+        <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+          All For One
+        </p>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Toutes tes vidéos</h1>
       </div>
 
-      {/* Drop URL hero */}
-      <button
-        onClick={() => openEditor()}
-        className="w-full text-left group"
-      >
-        <div className="rounded-2xl p-5 sm:p-6 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-colors flex items-center gap-4">
-          <div className="size-12 rounded-xl gradient-brand flex items-center justify-center shrink-0 shadow-md">
-            <LinkIcon className="size-5 text-white" strokeWidth={2.25} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-base">Ajouter une vidéo</p>
-            <p className="text-sm text-muted-foreground">Colle un lien Instagram pour commencer</p>
-          </div>
-          <Plus className="size-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
-        </div>
-      </button>
+      {/* Form inline (Notion-style) */}
+      <AddVideoForm />
 
       {loading ? (
         <p className="text-center text-sm text-muted-foreground py-12">Chargement…</p>
@@ -113,126 +92,93 @@ export default function AllForOnePage() {
             <Kpi label="Engmt" value={stats.totalEngagement} />
           </div>
 
-          {/* Filters */}
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-10"
-              />
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="default" className="h-10 px-3 shrink-0">
-                  <Filter className="size-4" />
-                  {activeFilters > 0 && (
-                    <Badge variant="default" className="ml-1 h-5 px-1.5">{activeFilters}</Badge>
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-72 p-3">
-                <DropdownMenuLabel className="px-0 pb-2 text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">Catégorie</DropdownMenuLabel>
-                <div className="flex flex-wrap gap-1.5">
-                  {(Object.keys(CONTENT_TYPES) as ContentType[]).map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => toggleType(t)}
-                      className={cn(
-                        "px-2.5 py-1 rounded-full text-xs font-medium border transition-colors flex items-center gap-1.5",
-                        typeFilter.includes(t)
-                          ? `bg-${CONTENT_TYPES[t].color} text-white border-transparent`
-                          : "border-border hover:bg-accent"
-                      )}
-                    >
-                      <span className={cn("size-1.5 rounded-full", typeFilter.includes(t) ? "bg-white/80" : `bg-${CONTENT_TYPES[t].color}`)} />
-                      {CONTENT_TYPES[t].label}
-                    </button>
-                  ))}
-                </div>
-                <DropdownMenuSeparator className="my-3" />
-                <DropdownMenuLabel className="px-0 pb-2 text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">Statut</DropdownMenuLabel>
-                <div className="flex flex-wrap gap-1.5">
-                  {(Object.keys(STATUSES) as ContentStatus[]).map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => toggleStatus(s)}
-                      className={cn(
-                        "px-2.5 py-1 rounded-full text-xs font-medium border transition-colors",
-                        statusFilter.includes(s)
-                          ? "bg-primary text-primary-foreground border-transparent"
-                          : "border-border hover:bg-accent"
-                      )}
-                    >
-                      {STATUSES[s].label}
-                    </button>
-                  ))}
-                </div>
-                {activeFilters > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full mt-3"
-                    onClick={() => { setTypeFilter([]); setStatusFilter([]); }}
-                  >
-                    <X className="size-3" /> Réinitialiser
+          {/* Filtres + grille */}
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
+                  placeholder="Rechercher…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9 h-10"
+                />
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="default" className="h-10 px-3 shrink-0">
+                    <Filter className="size-4" />
+                    {activeFilters > 0 && (
+                      <Badge variant="default" className="ml-1 h-5 px-1.5">{activeFilters}</Badge>
+                    )}
                   </Button>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          {/* Grille des vidéos */}
-          {filtered.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-12">Aucune vidéo.</p>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              {filtered.map((p) => (
-                <VideoCard key={p.id} post={p} onClick={() => openEditor(p.id)} />
-              ))}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-72 p-3">
+                  <DropdownMenuLabel className="px-0 pb-2 text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">Catégorie</DropdownMenuLabel>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(Object.keys(CONTENT_TYPES) as ContentType[]).map((t) => (
+                      <button
+                        key={t}
+                        onClick={() => toggleType(t)}
+                        className={cn(
+                          "px-2.5 py-1 rounded-full text-xs font-medium border transition-colors flex items-center gap-1.5",
+                          typeFilter.includes(t)
+                            ? `bg-${CONTENT_TYPES[t].color} text-white border-transparent`
+                            : "border-border hover:bg-accent"
+                        )}
+                      >
+                        <span className={cn("size-1.5 rounded-full", typeFilter.includes(t) ? "bg-white/80" : `bg-${CONTENT_TYPES[t].color}`)} />
+                        {CONTENT_TYPES[t].label}
+                      </button>
+                    ))}
+                  </div>
+                  <DropdownMenuSeparator className="my-3" />
+                  <DropdownMenuLabel className="px-0 pb-2 text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">Statut</DropdownMenuLabel>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(Object.keys(STATUSES) as ContentStatus[]).map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => toggleStatus(s)}
+                        className={cn(
+                          "px-2.5 py-1 rounded-full text-xs font-medium border transition-colors",
+                          statusFilter.includes(s)
+                            ? "bg-primary text-primary-foreground border-transparent"
+                            : "border-border hover:bg-accent"
+                        )}
+                      >
+                        {STATUSES[s].label}
+                      </button>
+                    ))}
+                  </div>
+                  {activeFilters > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full mt-3"
+                      onClick={() => { setTypeFilter([]); setStatusFilter([]); }}
+                    >
+                      <X className="size-3" /> Réinitialiser
+                    </Button>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-          )}
+
+            {filtered.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-12">
+                {posts.length === 0 ? "Pool vide. Colle ton premier lien plus haut." : "Aucune vidéo trouvée."}
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {filtered.map((p) => (
+                  <VideoCard key={p.id} post={p} onClick={() => openEditor(p.id)} />
+                ))}
+              </div>
+            )}
+          </div>
         </>
       )}
     </div>
-  );
-}
-
-function SalveSelector({ current }: { current: ReturnType<typeof useCurrentSalve> }) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors group">
-          <div className="text-left">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Salve</p>
-            <p className="text-sm font-semibold tracking-tight">L{current.legion} · S{current.salve}</p>
-          </div>
-          <ChevronDown className="size-4 text-muted-foreground group-hover:text-foreground" />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-52">
-        <DropdownMenuLabel className="text-[10px] uppercase tracking-wide">Salve</DropdownMenuLabel>
-        {([1, 2, 3] as const).map((s) => (
-          <DropdownMenuItem
-            key={s}
-            onClick={() => current.setCurrent({ legion: current.legion, salve: s })}
-            className={current.salve === s ? "bg-accent font-medium" : ""}
-          >
-            Salve {s}
-          </DropdownMenuItem>
-        ))}
-        <DropdownMenuSeparator />
-        <DropdownMenuLabel className="text-[10px] uppercase tracking-wide">Légion</DropdownMenuLabel>
-        <DropdownMenuItem onClick={() => current.setCurrent({ legion: Math.max(1, current.legion - 1), salve: current.salve })}>
-          ← Précédente
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => current.setCurrent({ legion: current.legion + 1, salve: current.salve })}>
-          Suivante →
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }
 
@@ -249,10 +195,11 @@ function VideoCard({ post, onClick }: { post: Post; onClick: () => void }) {
   const typeInfo = post.content_type ? CONTENT_TYPES[post.content_type] : null;
   const isDone = post.status === "PUBLISHED";
   const perf = post.performance ?? {};
+  const isInPool = !post.week_slot && !post.scheduled_for;
 
   return (
     <div className={cn(
-      "rounded-xl border border-border bg-card overflow-hidden hover:ring-2 hover:ring-primary/30 transition-all group",
+      "rounded-xl border border-border bg-card overflow-hidden hover:ring-2 hover:ring-primary/30 transition-all relative group",
       isDone && "opacity-75"
     )}>
       <button onClick={onClick} className="block w-full text-left">
@@ -268,9 +215,11 @@ function VideoCard({ post, onClick }: { post: Post; onClick: () => void }) {
             {typeInfo && (
               <span className={cn("absolute top-2 left-2 size-2.5 rounded-full ring-2 ring-white/80", `bg-${typeInfo.color}`)} />
             )}
-            <Badge variant={post.status.toLowerCase() as never} className="absolute top-2 right-2 text-[9px]">
-              {STATUSES[post.status].label}
-            </Badge>
+            {!isInPool && (
+              <Badge variant={post.status.toLowerCase() as never} className="absolute top-2 right-2 text-[9px]">
+                {STATUSES[post.status].label}
+              </Badge>
+            )}
           </div>
         ) : (
           <div className={cn("aspect-[4/5] flex items-center justify-center text-sm font-semibold", typeInfo ? `bg-${typeInfo.color}/15 text-${typeInfo.color}` : "bg-muted text-muted-foreground")}>
