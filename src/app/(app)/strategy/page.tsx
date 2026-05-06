@@ -161,7 +161,7 @@ function SlotCell({
     return (
       <button
         onClick={onAdd}
-        className="text-left rounded-lg border border-dashed border-border hover:border-primary/50 hover:bg-accent/30 transition-colors p-3 group min-h-[110px] flex flex-col"
+        className="text-left rounded-lg border border-dashed border-border hover:border-foreground/30 hover:bg-accent/30 transition-colors p-3 group min-h-[110px] flex flex-col"
       >
         <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-bold">{slotInfo.shortLabel}</p>
         <div className="flex items-center gap-1.5 mt-1.5">

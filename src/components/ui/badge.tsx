@@ -3,23 +3,24 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors",
   {
     variants: {
       variant: {
-        default: "border-transparent bg-primary text-primary-foreground",
-        secondary: "border-transparent bg-secondary text-secondary-foreground",
-        outline: "text-foreground border-border",
-        expert: "border-transparent bg-expert text-expert-foreground",
-        audience: "border-transparent bg-audience text-audience-foreground",
-        attachement: "border-transparent bg-attachement text-attachement-foreground",
-        valeur: "border-transparent bg-valeur text-valeur-foreground",
-        audience_valeur: "border-transparent bg-audience-valeur text-audience-valeur-foreground",
-        idea: "border-dashed border-status-idea text-status-idea bg-transparent",
-        draft: "border-transparent bg-status-draft/15 text-status-draft",
-        scheduled: "border-transparent bg-status-scheduled/15 text-status-scheduled",
-        published: "border-transparent bg-status-published/15 text-status-published",
-        missed: "border-transparent bg-status-missed/15 text-status-missed",
+        default: "bg-foreground text-background",
+        secondary: "bg-muted text-foreground",
+        outline: "border border-border text-foreground bg-transparent",
+        // Notion-style tinted tags : faible saturation
+        expert: "bg-expert/10 text-expert dark:bg-expert/20",
+        audience: "bg-audience/10 text-audience dark:bg-audience/20",
+        attachement: "bg-attachement/10 text-attachement dark:bg-attachement/20",
+        valeur: "bg-valeur/10 text-valeur dark:bg-valeur/20",
+        audience_valeur: "bg-audience-valeur/10 text-audience-valeur dark:bg-audience-valeur/20",
+        idea: "bg-muted text-muted-foreground",
+        draft: "bg-muted text-muted-foreground",
+        scheduled: "bg-muted text-foreground",
+        published: "bg-status-published/10 text-status-published",
+        missed: "bg-destructive/10 text-destructive",
       },
     },
     defaultVariants: {

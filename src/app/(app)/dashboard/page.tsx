@@ -142,7 +142,7 @@ export default function AllForOnePage() {
                         className={cn(
                           "px-2.5 py-1 rounded-full text-xs font-medium border transition-colors",
                           statusFilter.includes(s)
-                            ? "bg-primary text-primary-foreground border-transparent"
+                            ? "bg-foreground text-background border-transparent"
                             : "border-border hover:bg-accent"
                         )}
                       >
@@ -199,7 +199,7 @@ function VideoCard({ post, onClick }: { post: Post; onClick: () => void }) {
 
   return (
     <div className={cn(
-      "rounded-xl border border-border bg-card overflow-hidden hover:ring-2 hover:ring-primary/30 transition-all relative group",
+      "rounded-xl border border-border bg-card overflow-hidden hover:ring-2 hover:ring-foreground/30 transition-all relative group",
       isDone && "opacity-75"
     )}>
       <button onClick={onClick} className="block w-full text-left">

@@ -55,8 +55,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Sidebar — Desktop only */}
       <aside className="hidden md:flex flex-col w-60 border-r border-border bg-card shrink-0">
         <div className="flex h-16 items-center gap-3 px-5 border-b border-border">
-          <div className="size-8 rounded-md gradient-brand flex items-center justify-center shrink-0">
-            <Calendar className="size-4 text-white" />
+          <div className="size-8 rounded-md bg-foreground flex items-center justify-center shrink-0">
+            <Calendar className="size-4 text-background" />
           </div>
           <p className="text-sm font-semibold tracking-tight">Editorial</p>
         </div>
@@ -72,7 +72,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 className={cn(
                   "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   active
-                    ? "bg-primary/10 text-primary"
+                    ? "bg-accent text-foreground font-semibold"
                     : "text-muted-foreground hover:bg-accent hover:text-foreground"
                 )}
               >
@@ -86,7 +86,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             className={cn(
               "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
               pathname.startsWith("/settings")
-                ? "bg-primary/10 text-primary"
+                ? "bg-accent text-foreground font-semibold"
                 : "text-muted-foreground hover:bg-accent hover:text-foreground"
             )}
           >
@@ -98,7 +98,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="p-3 border-t border-border">
           <button
             onClick={focusAddForm}
-            className="w-full h-10 rounded-md gradient-brand text-white text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.99] transition-transform"
+            className="w-full h-10 rounded-md bg-foreground text-background hover:bg-foreground/90 text-sm font-medium flex items-center justify-center gap-2 active:scale-[0.99] transition-all"
           >
             <Plus className="size-4" /> Nouveau
           </button>
@@ -149,10 +149,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="flex items-center justify-center">
               <button
                 onClick={focusAddForm}
-                className="size-12 rounded-full gradient-brand flex items-center justify-center shadow-lg shadow-primary/30 active:scale-95 transition-transform -translate-y-2"
+                className="size-12 rounded-full bg-foreground flex items-center justify-center shadow-lg active:scale-95 transition-transform -translate-y-2"
                 aria-label="Nouvelle vidéo"
               >
-                <Plus className="size-5 text-white" strokeWidth={2.5} />
+                <Plus className="size-5 text-background" strokeWidth={2.5} />
               </button>
             </div>
             <NavTab item={navItems[2]} active={pathname.startsWith(navItems[2].href)} />

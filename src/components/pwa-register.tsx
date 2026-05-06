@@ -70,8 +70,8 @@ export function PWARegister() {
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md rounded-xl border border-border bg-card p-4 shadow-2xl glass animate-in slide-in-from-bottom-4 md:left-auto md:right-4">
       <div className="flex items-start gap-3">
-        <div className="flex size-10 items-center justify-center rounded-lg gradient-brand shrink-0">
-          <Download className="size-5 text-white" />
+        <div className="flex size-10 items-center justify-center rounded-lg bg-foreground shrink-0">
+          <Download className="size-5 text-background" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold">Installer Editorial</p>
@@ -86,7 +86,7 @@ export function PWARegister() {
       <div className="mt-3 flex gap-2">
         <button
           onClick={handleInstall}
-          className="flex-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+          className="flex-1 rounded-md bg-foreground px-3 py-2 text-sm font-medium text-background hover:bg-foreground/90"
         >
           Installer
         </button>

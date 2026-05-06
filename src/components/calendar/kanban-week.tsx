@@ -131,7 +131,7 @@ export function KanbanWeek() {
                   ))}
                   <button
                     onClick={() => setPickerDay(day.key)}
-                    className="w-full py-3 rounded-lg border border-dashed border-border text-xs text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors flex items-center justify-center gap-1.5"
+                    className="w-full py-3 rounded-lg border border-dashed border-border text-xs text-muted-foreground hover:border-foreground/30 hover:text-foreground transition-colors flex items-center justify-center gap-1.5"
                   >
                     <Plus className="size-3.5" /> Choisir
                   </button>
@@ -233,8 +233,8 @@ function KanbanCard({
             className={cn(
               "size-6 rounded-full border flex items-center justify-center transition-colors shrink-0",
               isDone
-                ? "bg-status-published border-status-published text-white"
-                : "border-border hover:border-primary"
+                ? "bg-foreground border-foreground text-background"
+                : "border-border hover:border-foreground/40"
             )}
             title={isDone ? "Marquer à faire" : "Marquer fait"}
             aria-label={isDone ? "Marquer à faire" : "Marquer fait"}

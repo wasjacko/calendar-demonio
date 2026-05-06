@@ -3,72 +3,78 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Notion-style palette: high contrast, almost no color
+ * - background/foreground: pure black / pure white
+ * - primary action = foreground (full inversion on hover)
+ * - content type accents are very desaturated (barely tinted gray)
+ */
 :root {
-  --background: oklch(0.985 0.002 285);
-  --foreground: oklch(0.18 0.01 285);
+  --background: oklch(1 0 0);              /* pure white */
+  --foreground: oklch(0.18 0 0);           /* near-black, high contrast */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.01 285);
+  --card-foreground: oklch(0.18 0 0);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.01 285);
-  --primary: oklch(0.55 0.22 295);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.96 0.003 285);
-  --secondary-foreground: oklch(0.2 0.01 285);
-  --muted: oklch(0.96 0.003 285);
-  --muted-foreground: oklch(0.48 0.01 285);
-  --accent: oklch(0.95 0.005 285);
-  --accent-foreground: oklch(0.2 0.01 285);
-  --destructive: oklch(0.6 0.22 25);
+  --popover-foreground: oklch(0.18 0 0);
+  --primary: oklch(0.18 0 0);              /* black */
+  --primary-foreground: oklch(1 0 0);      /* white */
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.18 0 0);
+  --muted: oklch(0.965 0 0);               /* very subtle gray */
+  --muted-foreground: oklch(0.5 0 0);      /* mid gray, readable */
+  --accent: oklch(0.95 0 0);               /* hover bg */
+  --accent-foreground: oklch(0.18 0 0);
+  --destructive: oklch(0.55 0.18 25);
   --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.92 0.003 285);
-  --input: oklch(0.93 0.003 285);
-  --ring: oklch(0.55 0.22 295);
-  --radius: 0.875rem;
+  --border: oklch(0.93 0 0);               /* very subtle */
+  --input: oklch(0.93 0 0);
+  --ring: oklch(0.4 0 0);
+  --radius: 0.5rem;                        /* sharper, Notion-like */
 
-  --expert: oklch(0.65 0.16 200);
+  /* Content types: very desaturated, subtle hint */
+  --expert: oklch(0.42 0.04 220);
   --expert-foreground: oklch(0.99 0 0);
-  --audience: oklch(0.62 0.22 295);
+  --audience: oklch(0.42 0.06 295);
   --audience-foreground: oklch(0.99 0 0);
-  --attachement: oklch(0.65 0.2 30);
+  --attachement: oklch(0.5 0.08 30);
   --attachement-foreground: oklch(0.99 0 0);
-  --valeur: oklch(0.7 0.18 145);
+  --valeur: oklch(0.45 0.06 145);
   --valeur-foreground: oklch(0.99 0 0);
-  --audience-valeur: oklch(0.65 0.18 250);
+  --audience-valeur: oklch(0.42 0.05 250);
   --audience-valeur-foreground: oklch(0.99 0 0);
 
-  --status-idea: oklch(0.7 0.01 285);
-  --status-draft: oklch(0.7 0.18 80);
-  --status-scheduled: oklch(0.6 0.18 240);
-  --status-published: oklch(0.65 0.18 145);
-  --status-missed: oklch(0.6 0.22 25);
+  --status-idea: oklch(0.6 0 0);
+  --status-draft: oklch(0.55 0 0);
+  --status-scheduled: oklch(0.4 0 0);
+  --status-published: oklch(0.45 0.05 145);
+  --status-missed: oklch(0.55 0.15 25);
 }
 
 .dark {
-  --background: oklch(0.135 0.005 285);
-  --foreground: oklch(0.96 0.003 285);
-  --card: oklch(0.17 0.005 285);
-  --card-foreground: oklch(0.96 0.003 285);
-  --popover: oklch(0.18 0.005 285);
-  --popover-foreground: oklch(0.96 0.003 285);
-  --primary: oklch(0.72 0.2 295);
-  --primary-foreground: oklch(0.15 0.01 285);
-  --secondary: oklch(0.22 0.005 285);
-  --secondary-foreground: oklch(0.96 0.003 285);
-  --muted: oklch(0.22 0.005 285);
-  --muted-foreground: oklch(0.62 0.008 285);
-  --accent: oklch(0.24 0.008 285);
-  --accent-foreground: oklch(0.96 0.003 285);
-  --destructive: oklch(0.65 0.22 25);
+  --background: oklch(0.155 0 0);          /* near-black */
+  --foreground: oklch(0.97 0 0);           /* near-white */
+  --card: oklch(0.18 0 0);
+  --card-foreground: oklch(0.97 0 0);
+  --popover: oklch(0.2 0 0);
+  --popover-foreground: oklch(0.97 0 0);
+  --primary: oklch(0.97 0 0);              /* white */
+  --primary-foreground: oklch(0.155 0 0);  /* black */
+  --secondary: oklch(0.22 0 0);
+  --secondary-foreground: oklch(0.97 0 0);
+  --muted: oklch(0.22 0 0);
+  --muted-foreground: oklch(0.62 0 0);
+  --accent: oklch(0.24 0 0);
+  --accent-foreground: oklch(0.97 0 0);
+  --destructive: oklch(0.65 0.18 25);
   --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.25 0.005 285);
-  --input: oklch(0.25 0.005 285);
-  --ring: oklch(0.72 0.2 295);
+  --border: oklch(0.24 0 0);
+  --input: oklch(0.24 0 0);
+  --ring: oklch(0.7 0 0);
 
-  --expert: oklch(0.7 0.18 200);
-  --audience: oklch(0.7 0.24 295);
-  --attachement: oklch(0.72 0.22 30);
-  --valeur: oklch(0.75 0.2 145);
-  --audience-valeur: oklch(0.7 0.2 250);
+  --expert: oklch(0.7 0.05 220);
+  --audience: oklch(0.7 0.07 295);
+  --attachement: oklch(0.72 0.1 30);
+  --valeur: oklch(0.72 0.07 145);
+  --audience-valeur: oklch(0.7 0.06 250);
 }
 
 @theme inline {
@@ -154,20 +160,10 @@
 }
 
 @layer utilities {
+  /* Notion: solid foreground/background, no gradient */
   .gradient-brand {
-    background: linear-gradient(135deg, oklch(0.65 0.22 295) 0%, oklch(0.7 0.22 340) 50%, oklch(0.7 0.22 30) 100%);
-  }
-  .gradient-expert {
-    background: linear-gradient(135deg, oklch(0.65 0.16 180) 0%, oklch(0.65 0.18 220) 100%);
-  }
-  .gradient-audience {
-    background: linear-gradient(135deg, oklch(0.6 0.22 280) 0%, oklch(0.65 0.22 320) 100%);
-  }
-  .gradient-attachement {
-    background: linear-gradient(135deg, oklch(0.7 0.2 15) 0%, oklch(0.7 0.2 45) 100%);
-  }
-  .gradient-valeur {
-    background: linear-gradient(135deg, oklch(0.7 0.18 130) 0%, oklch(0.7 0.18 160) 100%);
+    background: var(--foreground);
+    color: var(--background);
   }
   .glass {
     background: color-mix(in oklch, var(--card) 80%, transparent);

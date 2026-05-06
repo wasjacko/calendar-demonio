@@ -89,7 +89,7 @@ export function AddVideoForm() {
   };
 
   return (
-    <div id="add-video" className="rounded-2xl bg-card/50 border border-border/60 p-4 sm:p-5 space-y-4">
+    <div id="add-video" className="rounded-lg border border-border bg-card p-5 space-y-4">
       <p className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">
         Ajouter
       </p>
