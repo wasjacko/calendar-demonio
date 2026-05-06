@@ -68,17 +68,33 @@ export default function AllForOnePage() {
   const activeFilters = typeFilter.length + statusFilter.length;
 
   return (
-    <div className="px-4 sm:px-6 py-5 sm:py-7 max-w-3xl mx-auto space-y-7">
-      {/* Header */}
-      <div>
-        <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-          All For One
-        </p>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Toutes tes vidéos</h1>
-      </div>
+    <>
+      {/* Image de fond — mobile uniquement */}
+      <div
+        className="md:hidden fixed inset-0 -z-10 bg-cover bg-top bg-no-repeat pointer-events-none"
+        style={{ backgroundImage: "url('/home-bg.jpg')" }}
+        aria-hidden="true"
+      />
+      {/* Overlay dégradé pour la lisibilité du contenu */}
+      <div
+        className="md:hidden fixed inset-0 -z-10 pointer-events-none bg-gradient-to-b from-transparent via-background/40 to-background"
+        aria-hidden="true"
+      />
 
-      {/* Form inline (Notion-style) */}
-      <AddVideoForm />
+      <div className="px-4 sm:px-6 py-5 sm:py-7 max-w-3xl mx-auto space-y-7">
+        {/* Espace en haut sur mobile pour voir l'image */}
+        <div className="md:hidden h-[55vh]" aria-hidden="true" />
+
+        {/* Header — desktop uniquement (mobile : caché pour laisser place à l'image) */}
+        <div className="hidden md:block">
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+            All For One
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Toutes tes vidéos</h1>
+        </div>
+
+        {/* Form inline (Notion-style) */}
+        <AddVideoForm />
 
       {loading ? (
         <p className="text-center text-sm text-muted-foreground py-12">Chargement…</p>
@@ -182,7 +198,8 @@ export default function AllForOnePage() {
           </div>
         </>
       )}
-    </div>
+      </div>
+    </>
   );
 }
 

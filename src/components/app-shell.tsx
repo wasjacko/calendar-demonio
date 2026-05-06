@@ -83,8 +83,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar — Minimal */}
-        <header className="sticky top-0 z-30 flex h-14 sm:h-16 items-center gap-2 border-b border-border bg-background/85 backdrop-blur px-4 sm:px-6">
+        {/* Top bar — Minimal. Hidden on mobile /dashboard pour voir l'image de fond */}
+        <header
+          className={cn(
+            "sticky top-0 z-30 h-14 sm:h-16 items-center gap-2 border-b border-border bg-background/85 backdrop-blur px-4 sm:px-6",
+            pathname === "/dashboard" ? "hidden md:flex" : "flex"
+          )}
+        >
           <h1 className="text-base sm:text-lg font-semibold tracking-tight truncate flex-1">{pageTitle}</h1>
 
           <DropdownMenu>
