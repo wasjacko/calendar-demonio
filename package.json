@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "icons": "node scripts/generate-icons.mjs",
+    "icons": "node scripts/generate-icons-from-png.mjs",
     "vapid": "node scripts/generate-vapid.mjs",
     "type-check": "tsc --noEmit"
   },

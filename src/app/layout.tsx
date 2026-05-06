@@ -31,12 +31,12 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon-16.png", sizes: "16x16" },
-      { url: "/favicon-32.png", sizes: "32x32" },
-      { url: "/icons/icon-192.png", sizes: "192x192" },
-      { url: "/icons/icon-512.png", sizes: "512x512" },
+      { url: "/favicon-16.png?v=2", sizes: "16x16" },
+      { url: "/favicon-32.png?v=2", sizes: "32x32" },
+      { url: "/icons/icon-192.png?v=2", sizes: "192x192" },
+      { url: "/icons/icon-512.png?v=2", sizes: "512x512" },
     ],
-    apple: [{ url: "/apple-touch-icon.png" }],
+    apple: [{ url: "/apple-touch-icon.png?v=2", sizes: "180x180" }],
   },
   openGraph: {
     title: "Editorial Calendar — SKOOL Funnel",
