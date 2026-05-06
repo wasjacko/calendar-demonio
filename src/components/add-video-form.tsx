@@ -1,24 +1,48 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, Sparkles, Check } from "lucide-react";
+import { Loader2, Check } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useDataStore } from "@/lib/store";
 import { createPost } from "@/lib/posts";
 import { CONTENT_TYPES, type ContentType, type OgData } from "@/lib/types";
+import { useDraft } from "@/lib/use-draft";
 import { cn } from "@/lib/utils";
+
+type Draft = {
+  url: string;
+  category: ContentType | null;
+  notes: string;
+  preview: OgData | null;
+};
+
+const INITIAL_DRAFT: Draft = {
+  url: "",
+  category: null,
+  notes: "",
+  preview: null,
+};
 
 export function AddVideoForm() {
   const { upsertPost } = useDataStore();
   const urlRef = React.useRef<HTMLInputElement>(null);
 
-  const [url, setUrl] = React.useState("");
+  const {
+    value: draft,
+    setValue: setDraft,
+    clear: clearDraft,
+  } = useDraft<Draft>("add-video-form", INITIAL_DRAFT);
+
+  const { url, category, notes, preview } = draft;
+
   const [loadingPreview, setLoadingPreview] = React.useState(false);
-  const [preview, setPreview] = React.useState<OgData | null>(null);
-  const [category, setCategory] = React.useState<ContentType | null>(null);
-  const [notes, setNotes] = React.useState("");
   const [saving, setSaving] = React.useState(false);
+
+  const setUrl = (v: string) => setDraft((d) => ({ ...d, url: v }));
+  const setCategory = (v: ContentType | null) =>
+    setDraft((d) => ({ ...d, category: v }));
+  const setNotes = (v: string) => setDraft((d) => ({ ...d, notes: v }));
 
   const fetchPreview = async (u: string) => {
     if (!u.startsWith("http")) return;
@@ -27,7 +51,7 @@ export function AddVideoForm() {
       const res = await fetch(`/api/preview?url=${encodeURIComponent(u)}`);
       if (!res.ok) throw new Error(await res.text());
       const data = (await res.json()) as OgData;
-      setPreview(data);
+      setDraft((prev) => ({ ...prev, preview: data }));
     } catch {
       toast.error("Aperçu indisponible");
     } finally {
@@ -38,7 +62,7 @@ export function AddVideoForm() {
   const onPaste = async (e: React.ClipboardEvent<HTMLInputElement>) => {
     const pasted = e.clipboardData.getData("text").trim();
     if (pasted.startsWith("http")) {
-      setUrl(pasted);
+      setDraft((prev) => ({ ...prev, url: pasted }));
       setTimeout(() => fetchPreview(pasted), 100);
     }
   };
@@ -48,10 +72,7 @@ export function AddVideoForm() {
   };
 
   const reset = () => {
-    setUrl("");
-    setPreview(null);
-    setCategory(null);
-    setNotes("");
+    clearDraft();
     urlRef.current?.focus();
   };
 
@@ -80,16 +101,21 @@ export function AddVideoForm() {
       });
       upsertPost(created);
       toast.success("Vidéo ajoutée au pool");
-      reset();
+      clearDraft();
     } catch (err) {
-      toast.error("Erreur", { description: err instanceof Error ? err.message : undefined });
+      toast.error("Erreur", {
+        description: err instanceof Error ? err.message : undefined,
+      });
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div id="add-video" className="rounded-2xl border border-border bg-card/95 backdrop-blur-md p-5 sm:p-6 space-y-4 shadow-sm">
+    <div
+      id="add-video"
+      className="rounded-2xl border border-border bg-card/95 backdrop-blur-md p-5 sm:p-6 space-y-4 shadow-sm"
+    >
       <p className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">
         Ajouter
       </p>
@@ -128,16 +154,26 @@ export function AddVideoForm() {
                 src={preview.image}
                 alt=""
                 className="size-16 sm:size-20 rounded-md object-cover shrink-0 bg-muted"
-                onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")}
+                onError={(e) =>
+                  ((e.currentTarget as HTMLImageElement).style.display = "none")
+                }
               />
             )}
             <div className="flex-1 min-w-0 space-y-0.5">
-              {preview.title && <p className="text-sm font-medium line-clamp-1">{preview.title}</p>}
+              {preview.title && (
+                <p className="text-sm font-medium line-clamp-1">
+                  {preview.title}
+                </p>
+              )}
               {preview.description && (
-                <p className="text-xs text-muted-foreground line-clamp-2">{preview.description}</p>
+                <p className="text-xs text-muted-foreground line-clamp-2">
+                  {preview.description}
+                </p>
               )}
               {preview.site_name && (
-                <p className="text-[10px] text-muted-foreground/70 mt-1">{preview.site_name}</p>
+                <p className="text-[10px] text-muted-foreground/70 mt-1">
+                  {preview.site_name}
+                </p>
               )}
             </div>
           </div>
@@ -146,7 +182,9 @@ export function AddVideoForm() {
 
       {/* Catégorie pills */}
       <div className="space-y-1.5">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium">Catégorie</p>
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+          Catégorie
+        </p>
         <div className="flex flex-wrap gap-1.5">
           {(Object.keys(CONTENT_TYPES) as ContentType[]).map((t) => {
             const isActive = category === t;
@@ -162,7 +200,12 @@ export function AddVideoForm() {
                     : "bg-muted/50 hover:bg-accent text-foreground"
                 )}
               >
-                <span className={cn("size-1.5 rounded-full", isActive ? "bg-white/80" : `bg-${CONTENT_TYPES[t].color}`)} />
+                <span
+                  className={cn(
+                    "size-1.5 rounded-full",
+                    isActive ? "bg-white/80" : `bg-${CONTENT_TYPES[t].color}`
+                  )}
+                />
                 {CONTENT_TYPES[t].label}
               </button>
             );
@@ -189,9 +232,13 @@ export function AddVideoForm() {
           className="h-10"
         >
           {saving ? (
-            <><Loader2 className="size-4 animate-spin" /> Ajout…</>
+            <>
+              <Loader2 className="size-4 animate-spin" /> Ajout…
+            </>
           ) : (
-            <><Check className="size-4" /> Ajouter</>
+            <>
+              <Check className="size-4" /> Ajouter
+            </>
           )}
         </Button>
         {(url || preview || category || notes) && !saving && (

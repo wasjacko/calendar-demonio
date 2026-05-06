@@ -28,31 +28,65 @@ import {
   CONTENT_TYPES,
   type ContentType,
 } from "@/lib/types";
+import { useDraft } from "@/lib/use-draft";
 import { cn } from "@/lib/utils";
+
+type EditorDraft = {
+  category: ContentType | null;
+  notes: string;
+  views: string;
+  likes: string;
+  comments: string;
+  saves: string;
+};
+
+const EMPTY_DRAFT: EditorDraft = {
+  category: null,
+  notes: "",
+  views: "",
+  likes: "",
+  comments: "",
+  saves: "",
+};
 
 export function QuickAdd() {
   const { editorOpen, editorPostId, closeEditor } = useUIStore();
   const { posts, upsertPost, removePost } = useDataStore();
   const post = React.useMemo(() => posts.find((p) => p.id === editorPostId) ?? null, [posts, editorPostId]);
 
-  const [category, setCategory] = React.useState<ContentType | null>(null);
-  const [notes, setNotes] = React.useState("");
-  const [submitting, setSubmitting] = React.useState(false);
-  const [views, setViews] = React.useState("");
-  const [likes, setLikes] = React.useState("");
-  const [comments, setComments] = React.useState("");
-  const [saves, setSaves] = React.useState("");
-
-  React.useEffect(() => {
-    if (!editorOpen || !post) return;
-    setCategory(post.content_type);
-    setNotes(post.notes ?? "");
+  // Initial values from the post (used when no draft exists for this post)
+  const initialFromPost: EditorDraft = React.useMemo(() => {
+    if (!post) return EMPTY_DRAFT;
     const perf = post.performance ?? {};
-    setViews(perf.views?.toString() ?? "");
-    setLikes(perf.likes?.toString() ?? "");
-    setComments(perf.comments?.toString() ?? "");
-    setSaves(perf.saves?.toString() ?? "");
-  }, [editorOpen, post]);
+    return {
+      category: post.content_type,
+      notes: post.notes ?? "",
+      views: perf.views?.toString() ?? "",
+      likes: perf.likes?.toString() ?? "",
+      comments: perf.comments?.toString() ?? "",
+      saves: perf.saves?.toString() ?? "",
+    };
+  }, [post]);
+
+  // Draft persisted per-post in localStorage so unsaved edits survive
+  // accidental close, navigation, or PWA reload.
+  const draftKey = post ? `editor:${post.id}` : null;
+  const {
+    value: draft,
+    setValue: setDraft,
+    clear: clearDraft,
+  } = useDraft<EditorDraft>(draftKey, initialFromPost);
+
+  const { category, notes, views, likes, comments, saves } = draft;
+  const setCategory = (v: ContentType | null) =>
+    setDraft((d) => ({ ...d, category: v }));
+  const setNotes = (v: string) => setDraft((d) => ({ ...d, notes: v }));
+  const setViews = (v: string) => setDraft((d) => ({ ...d, views: v }));
+  const setLikes = (v: string) => setDraft((d) => ({ ...d, likes: v }));
+  const setComments = (v: string) => setDraft((d) => ({ ...d, comments: v }));
+  const setSaves = (v: string) => setDraft((d) => ({ ...d, saves: v }));
+
+  const [submitting, setSubmitting] = React.useState(false);
 
   if (!post) return null;
 
@@ -75,6 +109,7 @@ export function QuickAdd() {
         performance: hasPerformance ? performance : null,
       });
       upsertPost(updated);
+      clearDraft();
       toast.success("Mis à jour");
       closeEditor();
     } catch {
@@ -89,6 +124,7 @@ export function QuickAdd() {
     try {
       await deletePost(post.id);
       removePost(post.id);
+      clearDraft();
       toast.success("Supprimée");
       closeEditor();
     } catch {

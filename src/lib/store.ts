@@ -52,7 +52,18 @@ export const useUIStore = create<UIStore>()(
         set({ editorOpen: true, editorPostId: postId, selectedDate: date }),
       closeEditor: () => set({ editorOpen: false, editorPostId: null }),
     }),
-    { name: "editorial-ui", partialize: (s) => ({ viewMode: s.viewMode, sidebarOpen: s.sidebarOpen }) }
+    {
+      name: "editorial-ui",
+      // Persiste tout sauf l'état transitoire de l'éditeur (qui doit toujours
+      // s'ouvrir fermé au reload). Ainsi la vue du calendrier, les filtres et
+      // le jour sélectionné sont retenus d'une session à l'autre.
+      partialize: (s) => ({
+        viewMode: s.viewMode,
+        sidebarOpen: s.sidebarOpen,
+        filters: s.filters,
+        selectedDate: s.selectedDate,
+      }),
+    }
   )
 );
 
