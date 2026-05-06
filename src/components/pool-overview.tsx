@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowRight, Calendar, Inbox } from "lucide-react";
+import { ArrowRight, Calendar } from "lucide-react";
 import { useDataStore, useUIStore } from "@/lib/store";
 import { CONTENT_TYPES, FORMATS } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -33,19 +33,8 @@ export function PoolOverview() {
     [pool]
   );
 
-  // État vide → message accueillant
-  if (pool.length === 0) {
-    return (
-      <div className="rounded-[28px] border border-dashed border-border bg-card p-5 flex items-center gap-3">
-        <div className="size-10 rounded-full bg-muted flex items-center justify-center shrink-0">
-          <Inbox className="size-4 text-muted-foreground" />
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Pool vide. Colle un lien ci-dessus pour démarrer.
-        </p>
-      </div>
-    );
-  }
+  // Pool vide → on n'affiche rien (laisse l'image Garou respirer)
+  if (pool.length === 0) return null;
 
   return (
     <div className="rounded-[28px] border border-border bg-card p-4 sm:p-5 space-y-3 shadow-sm">
