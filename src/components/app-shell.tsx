@@ -3,11 +3,12 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Calendar, BarChart3 } from "lucide-react";
+import { Home, Calendar, BarChart3, Archive } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "All For One", short: "Home", icon: Home },
+  { href: "/stockage", label: "Stockage", short: "Stock", icon: Archive },
   { href: "/strategy", label: "Salve", short: "Salve", icon: Calendar },
   { href: "/calendar", label: "KPI", short: "KPI", icon: BarChart3 },
 ];
@@ -83,7 +84,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           className="md:hidden fixed left-3 right-3 z-30"
           style={{ bottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
         >
-          <nav className="grid grid-cols-3 items-center h-16 bg-card/95 backdrop-blur-md border border-border rounded-2xl shadow-lg max-w-md mx-auto">
+          <nav className="grid grid-cols-4 items-center h-16 bg-card/95 backdrop-blur-md border border-border rounded-2xl shadow-lg max-w-md mx-auto">
             {navItems.map((item) => {
               const active = pathname === item.href || pathname.startsWith(item.href + "/");
               const Icon = item.icon;
@@ -95,7 +96,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 >
                   <div
                     className={cn(
-                      "flex flex-col items-center justify-center gap-0.5 px-4 py-2 rounded-xl transition-all",
+                      "flex flex-col items-center justify-center gap-0.5 px-3 py-2 rounded-xl transition-all",
                       active
                         ? "bg-foreground text-background"
                         : "text-muted-foreground hover:text-foreground"

@@ -214,10 +214,10 @@ export function AddVideoForm() {
 
       {/* BLOC 2 — Détails + action */}
       <div className="rounded-[28px] border border-border bg-card p-4 sm:p-5 shadow-sm space-y-4">
-        {/* Catégorie */}
+        {/* Alter */}
         <div className="space-y-2">
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold px-1">
-            Catégorie
+            Alter
           </p>
           <div className="flex flex-wrap gap-1.5">
             {(Object.keys(CONTENT_TYPES) as ContentType[]).map((t) => {

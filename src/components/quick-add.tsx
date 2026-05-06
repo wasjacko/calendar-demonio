@@ -213,9 +213,9 @@ export function QuickAdd() {
               </div>
             )}
 
-            {/* Catégorie */}
+            {/* Alter */}
             <div className="space-y-1.5">
-              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Catégorie</Label>
+              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Alter</Label>
               <div className="flex flex-wrap gap-1.5">
                 {(Object.keys(CONTENT_TYPES) as ContentType[]).map((t) => {
                   const isActive = category === t;

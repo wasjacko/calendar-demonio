@@ -55,7 +55,7 @@ export function CalendarToolbar() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-72 p-3">
-          <DropdownMenuLabel className="px-0 pb-2 text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">Catégorie</DropdownMenuLabel>
+          <DropdownMenuLabel className="px-0 pb-2 text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">Alter</DropdownMenuLabel>
           <div className="flex flex-wrap gap-1.5">
             {(Object.keys(CONTENT_TYPES) as ContentType[]).map((t) => (
               <button

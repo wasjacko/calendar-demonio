@@ -38,7 +38,7 @@ export default function KpiPage() {
       NONE: assignedPosts.filter((p) => !p.inspi_status).length,
     };
 
-    // Catégorie breakdown
+    // Alter breakdown
     const byCategory = {} as Record<ContentType, number>;
     (Object.keys(CONTENT_TYPES) as ContentType[]).forEach((c) => {
       byCategory[c] = posts.filter((p) => p.content_type === c).length;
@@ -146,7 +146,7 @@ export default function KpiPage() {
       </Section>
 
       {/* Répartition par catégorie */}
-      <Section title="Catégories">
+      <Section title="Alters">
         <div className="space-y-2.5">
           {(Object.keys(CONTENT_TYPES) as ContentType[]).map((c) => (
             <CategoryRow
