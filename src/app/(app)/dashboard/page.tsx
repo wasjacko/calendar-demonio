@@ -3,6 +3,7 @@
 import * as React from "react";
 import { AddVideoForm } from "@/components/add-video-form";
 import { PoolOverview } from "@/components/pool-overview";
+import { HomeAudio } from "@/components/home-audio";
 
 export default function HomePage() {
   // Sur mobile, body devient transparent → l'image Garou est le fond
@@ -14,6 +15,9 @@ export default function HomePage() {
 
   return (
     <>
+      {/* Audio thème All For One — autoplay au premier touch */}
+      <HomeAudio />
+
       {/* Image de fond — mobile uniquement, FIXE et plein viewport.
           L'image reste visible en permanence derrière le contenu,
           même quand on scroll. */}
