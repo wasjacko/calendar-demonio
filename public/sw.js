@@ -1,8 +1,8 @@
 // Service Worker — Editorial Calendar PWA
 // Push notifications + offline cache + background sync
 
-const CACHE_NAME = "editorial-v1";
-const RUNTIME_CACHE = "editorial-runtime-v1";
+const CACHE_NAME = "editorial-v2";
+const RUNTIME_CACHE = "editorial-runtime-v2";
 
 const STATIC_ASSETS = [
   "/",

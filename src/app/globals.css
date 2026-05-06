@@ -165,13 +165,6 @@
     background: var(--foreground);
     color: var(--background);
   }
-  /* Mobile home: rend le body transparent pour que l'image Garou
-     soit pleinement visible derrière les cartes (pas de bande blanche). */
-  @media (max-width: 767px) {
-    body.home-transparent {
-      background: transparent !important;
-    }
-  }
   .glass {
     background: color-mix(in oklch, var(--card) 80%, transparent);
     backdrop-filter: blur(16px);
