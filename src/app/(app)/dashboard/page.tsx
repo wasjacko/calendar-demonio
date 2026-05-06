@@ -84,12 +84,16 @@ export default function AllForOnePage() {
         <p className="text-center text-sm text-muted-foreground py-12">Chargement…</p>
       ) : (
         <>
-          {/* KPIs */}
-          <div className="grid grid-cols-4 gap-2 sm:gap-3">
-            <Kpi label="Total" value={posts.length} />
-            <Kpi label="Faites" value={stats.published} />
-            <Kpi label="Vues" value={stats.totalViews} />
-            <Kpi label="Engmt" value={stats.totalEngagement} />
+          {/* KPIs : nombre de vidéos par catégorie */}
+          <div className="grid grid-cols-5 gap-2 sm:gap-3">
+            {(Object.keys(CONTENT_TYPES) as ContentType[]).map((t) => (
+              <Kpi
+                key={t}
+                label={CONTENT_TYPES[t].label}
+                value={stats.byType[t]}
+                color={CONTENT_TYPES[t].color}
+              />
+            ))}
           </div>
 
           {/* Filtres + grille */}
@@ -182,11 +186,14 @@ export default function AllForOnePage() {
   );
 }
 
-function Kpi({ label, value }: { label: string; value: number }) {
+function Kpi({ label, value, color }: { label: string; value: number; color?: string }) {
   return (
-    <div>
-      <p className="text-2xl sm:text-3xl font-bold tabular-nums tracking-tight">{formatNumber(value)}</p>
-      <p className="text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground font-medium mt-0.5">{label}</p>
+    <div className="space-y-1">
+      <p className="text-xl sm:text-3xl font-bold tabular-nums tracking-tight leading-none">{formatNumber(value)}</p>
+      <div className="flex items-center gap-1.5">
+        {color && <span className={`size-1.5 rounded-full bg-${color}`} />}
+        <p className="text-[9px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-medium truncate">{label}</p>
+      </div>
     </div>
   );
 }
@@ -257,14 +264,18 @@ function formatNumber(n: number | undefined): string {
 }
 
 function computeStats(posts: Post[]) {
-  const totalViews = posts.reduce((sum, p) => sum + (p.performance?.views ?? 0), 0);
-  const totalEngagement = posts.reduce((sum, p) => {
-    const perf = p.performance ?? {};
-    return sum + (perf.likes ?? 0) + (perf.comments ?? 0) + (perf.saves ?? 0);
-  }, 0);
+  const byType: Record<ContentType, number> = {
+    EXPERT: 0,
+    AUDIENCE: 0,
+    ATTACHEMENT: 0,
+    VALEUR: 0,
+    AUDIENCE_VALEUR: 0,
+  };
+  posts.forEach((p) => {
+    if (p.content_type) byType[p.content_type]++;
+  });
   return {
     published: posts.filter((p) => p.status === "PUBLISHED").length,
-    totalViews,
-    totalEngagement,
+    byType,
   };
 }
