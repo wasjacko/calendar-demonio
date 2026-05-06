@@ -2,7 +2,7 @@
 
 import { createClient } from "./supabase/client";
 import { OWNER_USER_ID } from "./owner";
-import type { Post, ContentType, ContentStatus, ContentFormat, WeekSlot, OgData } from "./types";
+import type { Post, ContentType, ContentStatus, ContentFormat, WeekSlot, OgData, InspiStatus } from "./types";
 
 export interface PostInput {
   title: string;
@@ -26,6 +26,7 @@ export interface PostInput {
   legion_number?: number | null;
   week_slot?: WeekSlot | null;
   inspi_from?: string | null;
+  inspi_status?: InspiStatus | null;
 }
 
 export async function fetchPosts(rangeStart?: Date, rangeEnd?: Date): Promise<Post[]> {

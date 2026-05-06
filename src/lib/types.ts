@@ -2,6 +2,7 @@ export type ContentType = "EXPERT" | "AUDIENCE" | "ATTACHEMENT" | "VALEUR" | "AU
 export type ContentFormat = "REEL" | "POST" | "CAROUSEL" | "STORY" | "LIVE";
 export type ContentStatus = "IDEA" | "DRAFT" | "SCHEDULED" | "PUBLISHED" | "MISSED";
 export type WeekSlot = "MON_0631" | "TUE_1104" | "WED_1217" | "FRI_1600" | "SUN_0500";
+export type InspiStatus = "TODO" | "DOING" | "DONE";
 
 export interface OgData {
   url: string;
@@ -52,9 +53,17 @@ export interface Post {
   legion_number: number | null;
   week_slot: WeekSlot | null;
   inspi_from: string | null;
+  inspi_status: InspiStatus | null;
   created_at: string;
   updated_at: string;
 }
+
+// Métadonnées des états inspi pour la vue Légion (couleur de carte + label)
+export const INSPI_STATUSES: Record<InspiStatus, { label: string; short: string }> = {
+  TODO: { label: "À faire", short: "À faire" },
+  DOING: { label: "En cours", short: "En cours" },
+  DONE: { label: "Fait", short: "Fait" },
+};
 
 export interface Template {
   id: string;
