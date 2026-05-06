@@ -53,20 +53,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar — masqué sur mobile /dashboard. Sur les autres pages: juste le titre */}
+        {/* Top bar — masqué sur mobile /dashboard. Safe-area pour la notch iPhone */}
         <header
           className={cn(
-            "sticky top-0 z-30 h-14 sm:h-16 items-center gap-2 border-b border-border bg-background/85 backdrop-blur px-4 sm:px-6",
+            "sticky top-0 z-30 items-center gap-2 border-b border-border bg-background/85 backdrop-blur px-4 sm:px-6",
             pathname === "/dashboard" ? "hidden md:flex" : "flex"
           )}
+          style={{
+            paddingTop: "env(safe-area-inset-top)",
+            minHeight: "calc(3.5rem + env(safe-area-inset-top))",
+          }}
         >
-          <h1 className="text-base sm:text-lg font-semibold tracking-tight truncate flex-1">
+          <h1 className="text-base sm:text-lg font-semibold tracking-tight truncate flex-1 py-3 sm:py-4">
             {pageTitle}
           </h1>
         </header>
 
-        {/* Main content */}
-        <main className="flex-1 overflow-auto pb-20 md:pb-0">{children}</main>
+        {/* Main content — pb généreux pour clear la bottom nav + safe-area + respiration */}
+        <main
+          className="flex-1 overflow-auto md:pb-0"
+          style={{ paddingBottom: "calc(5rem + env(safe-area-inset-bottom))" }}
+        >
+          {children}
+        </main>
 
         {/* Mobile bottom nav — 3 items */}
         <div

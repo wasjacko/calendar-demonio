@@ -18,22 +18,23 @@ export default function HomePage() {
       />
 
       <div className="px-4 sm:px-6 max-w-2xl mx-auto">
-        {/* Espace en haut sur mobile pour voir l'image */}
-        <div className="md:hidden h-[35vh]" aria-hidden="true" />
+        {/* Espace en haut sur mobile : safe-area + image visible */}
+        <div
+          className="md:hidden"
+          style={{ height: "calc(35vh + env(safe-area-inset-top))" }}
+          aria-hidden="true"
+        />
 
         {/* Header — desktop uniquement */}
-        <div className="hidden md:block py-7">
+        <div className="hidden md:block py-8">
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
             All For One
           </p>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Toutes tes vidéos</h1>
         </div>
 
-        {/* Form inline — la seule chose sur la home */}
+        {/* Form inline */}
         <AddVideoForm />
-
-        {/* Spacer pour bottom nav mobile */}
-        <div className="md:hidden h-24" aria-hidden="true" />
       </div>
     </>
   );

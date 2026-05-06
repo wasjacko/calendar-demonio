@@ -45,7 +45,7 @@ export default function StrategyPage() {
   }, [posts]);
 
   return (
-    <div className="px-4 sm:px-6 py-4 sm:py-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">
+    <div className="px-4 sm:px-6 py-6 sm:py-8 max-w-7xl mx-auto space-y-5 sm:space-y-6">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
           <h2 className="text-lg sm:text-xl font-bold tracking-tight">Légion {legion}</h2>
