@@ -4,22 +4,18 @@ import * as React from "react";
 import {
   ChevronLeft,
   ChevronRight,
-  ExternalLink,
   Circle,
   CircleDashed,
   CircleCheck,
   Plus,
 } from "lucide-react";
-import { toast } from "sonner";
 import { useDataStore } from "@/lib/store";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CopyButton } from "@/components/copy-button";
 import { LegionPicker } from "@/components/strategy/legion-picker";
 import { StateDialog } from "@/components/strategy/state-dialog";
 import { useCurrentSalve } from "@/lib/use-current-salve";
-import { updatePost } from "@/lib/posts";
 import {
   CONTENT_TYPES,
   WEEK_SLOTS,
@@ -33,7 +29,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export default function StrategyPage() {
-  const { posts, loading, upsertPost } = useDataStore();
+  const { posts, loading } = useDataStore();
   const current = useCurrentSalve();
   const [legion, setLegion] = React.useState(current.legion);
   const [pickerTarget, setPickerTarget] = React.useState<{
@@ -56,15 +52,6 @@ export default function StrategyPage() {
     });
     return map;
   }, [posts]);
-
-  const setInspiStatus = async (post: Post, next: InspiStatus | null) => {
-    try {
-      const updated = await updatePost(post.id, { inspi_status: next });
-      upsertPost(updated);
-    } catch {
-      toast.error("Erreur");
-    }
-  };
 
   return (
     <div className="px-4 sm:px-6 pt-10 sm:pt-12 pb-10 sm:pb-12 max-w-7xl mx-auto space-y-6 sm:space-y-8">
@@ -99,7 +86,6 @@ export default function StrategyPage() {
               salve={salveNum}
               postsBySlot={postsBySlot}
               onEdit={(id) => setStateDialogPostId(id)}
-              onSetInspiStatus={setInspiStatus}
               onPickEmpty={(slot) => setPickerTarget({ legion, salve: salveNum, slot })}
             />
           ))}
@@ -127,14 +113,12 @@ function SalveBlock({
   salve,
   postsBySlot,
   onEdit,
-  onSetInspiStatus,
   onPickEmpty,
 }: {
   legion: number;
   salve: 1 | 2 | 3;
   postsBySlot: Map<string, Post>;
   onEdit: (id: string) => void;
-  onSetInspiStatus: (post: Post, next: InspiStatus | null) => void;
   onPickEmpty: (slot: WeekSlot) => void;
 }) {
   const filled = WEEK_SLOTS_ORDER.filter((s) => postsBySlot.has(`${legion}-${salve}-${s}`)).length;
@@ -157,7 +141,6 @@ function SalveBlock({
                 expectedType={expectedType}
                 post={post}
                 onEdit={() => post && onEdit(post.id)}
-                onSetInspiStatus={onSetInspiStatus}
                 onPickEmpty={() => onPickEmpty(slot)}
               />
             );
@@ -170,15 +153,9 @@ function SalveBlock({
 
 // Mappe l'état inspi vers les classes Tailwind appliquées à la carte entière
 const STATE_CARD_STYLES: Record<InspiStatus, string> = {
-  TODO: "bg-sky-50 border-sky-300 ring-sky-200/60",
-  DOING: "bg-amber-50 border-amber-400 ring-amber-200/70",
-  DONE: "bg-emerald-50 border-emerald-300 ring-emerald-200/60",
-};
-
-const STATE_CHIP_STYLES: Record<InspiStatus, string> = {
-  TODO: "bg-sky-500 text-white",
-  DOING: "bg-amber-500 text-white",
-  DONE: "bg-emerald-500 text-white",
+  TODO: "bg-sky-50 border-sky-300",
+  DOING: "bg-amber-50 border-amber-400",
+  DONE: "bg-emerald-50 border-emerald-300",
 };
 
 function SlotCell({
@@ -186,14 +163,12 @@ function SlotCell({
   expectedType,
   post,
   onEdit,
-  onSetInspiStatus,
   onPickEmpty,
 }: {
   slot: WeekSlot;
   expectedType: import("@/lib/types").ContentType;
   post: Post | undefined;
   onEdit: () => void;
-  onSetInspiStatus: (post: Post, next: InspiStatus | null) => void;
   onPickEmpty: () => void;
 }) {
   const slotInfo = WEEK_SLOTS[slot];
@@ -222,18 +197,43 @@ function SlotCell({
   const inspi = post.inspi_status;
   const cardStyle = inspi ? STATE_CARD_STYLES[inspi] : "bg-card border-border";
 
-  const cycle = (target: InspiStatus) => {
-    onSetInspiStatus(post, inspi === target ? null : target);
+  // Bandeau d'état: visible d'un coup d'œil, plein largeur, en haut de la carte
+  const stateBand: Record<InspiStatus, { bg: string; label: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }> }> = {
+    TODO: { bg: "bg-sky-500", label: "À faire", icon: Circle },
+    DOING: { bg: "bg-amber-500", label: "En cours", icon: CircleDashed },
+    DONE: { bg: "bg-emerald-500", label: "Fait", icon: CircleCheck },
   };
+  const band = inspi ? stateBand[inspi] : null;
+  const BandIcon = band?.icon;
 
   return (
-    <div
+    <button
+      type="button"
+      onClick={onEdit}
       className={cn(
-        "relative rounded-lg overflow-hidden border transition-all min-h-[110px] flex flex-col group",
+        "relative rounded-lg overflow-hidden border transition-all min-h-[110px] flex flex-col group text-left active:scale-[0.99]",
         cardStyle
       )}
     >
-      <button onClick={onEdit} className="text-left flex-1 flex flex-col">
+      {/* BANDEAU D'ÉTAT — plein largeur, hyper visible.
+          Si pas d'état: bandeau gris discret "Aucun état". */}
+      {band && BandIcon ? (
+        <div
+          className={cn(
+            "flex items-center justify-center gap-1.5 py-1.5 text-white text-[11px] font-bold uppercase tracking-wider",
+            band.bg
+          )}
+        >
+          <BandIcon className="size-3.5" strokeWidth={2.5} />
+          {band.label}
+        </div>
+      ) : (
+        <div className="flex items-center justify-center gap-1.5 py-1.5 bg-muted text-muted-foreground text-[11px] font-medium uppercase tracking-wider">
+          Aucun état
+        </div>
+      )}
+
+      <div className="flex-1 flex flex-col">
         {post.visual_url ? (
           <div className="relative aspect-square bg-muted">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -244,16 +244,6 @@ function SlotCell({
               onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")}
             />
             <div className={cn("absolute top-1 left-1 size-2.5 rounded-full ring-2 ring-white/80", `bg-${typeForPost.color}`)} />
-            {inspi && (
-              <span
-                className={cn(
-                  "absolute top-1 right-1 text-[9px] font-semibold px-1.5 py-0.5 rounded-full ring-2 ring-white/80",
-                  STATE_CHIP_STYLES[inspi]
-                )}
-              >
-                {inspi === "TODO" ? "À faire" : inspi === "DOING" ? "En cours" : "Fait"}
-              </span>
-            )}
           </div>
         ) : (
           <div className={cn("aspect-square flex items-center justify-center text-xs font-semibold", `bg-${typeForPost.color}/15 text-${typeForPost.color}`)}>
@@ -264,84 +254,8 @@ function SlotCell({
           <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-bold">{slotInfo.shortLabel}</p>
           <p className="text-xs font-medium line-clamp-2 mt-0.5">{post.title}</p>
         </div>
-      </button>
-
-      {/* Cycler 3 états — toujours visible, plein largeur en bas */}
-      <div className="grid grid-cols-3 border-t border-current/10 bg-background/40 backdrop-blur-sm">
-        <StateButton
-          label="À faire"
-          icon={Circle}
-          active={inspi === "TODO"}
-          activeClass="bg-sky-500 text-white"
-          onClick={() => cycle("TODO")}
-        />
-        <StateButton
-          label="En cours"
-          icon={CircleDashed}
-          active={inspi === "DOING"}
-          activeClass="bg-amber-500 text-white"
-          onClick={() => cycle("DOING")}
-        />
-        <StateButton
-          label="Fait"
-          icon={CircleCheck}
-          active={inspi === "DONE"}
-          activeClass="bg-emerald-500 text-white"
-          onClick={() => cycle("DONE")}
-        />
       </div>
-
-      {post.source_url && (
-        <div className="absolute top-1 right-1 flex items-center gap-0.5 sm:opacity-0 sm:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-          {!inspi && (
-            <>
-              <CopyButton value={post.source_url} className="bg-background/90 backdrop-blur-sm rounded shadow-sm" size="xs" />
-              <a
-                href={post.source_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="bg-background/90 backdrop-blur-sm rounded shadow-sm p-1 text-muted-foreground hover:text-foreground"
-                title="Ouvrir"
-              >
-                <ExternalLink className="size-3" />
-              </a>
-            </>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function StateButton({
-  label,
-  icon: Icon,
-  active,
-  activeClass,
-  onClick,
-}: {
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  active: boolean;
-  activeClass: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      title={label}
-      className={cn(
-        "flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium transition-colors",
-        active
-          ? activeClass
-          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-      )}
-    >
-      <Icon className="size-3" />
-      <span className="hidden sm:inline">{label}</span>
     </button>
   );
 }
+
