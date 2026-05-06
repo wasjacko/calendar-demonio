@@ -4,11 +4,6 @@ import * as React from "react";
 import {
   ChevronLeft,
   ChevronRight,
-  Plus,
-  Eye,
-  Heart,
-  MessageCircle,
-  Bookmark,
   ExternalLink,
 } from "lucide-react";
 import { useDataStore, useUIStore } from "@/lib/store";
@@ -24,7 +19,6 @@ import {
   SALVE_PATTERNS,
   FORMATS,
   STATUSES,
-  getDateForSlot,
   type Post,
   type WeekSlot,
 } from "@/lib/types";
@@ -82,7 +76,6 @@ export default function StrategyPage() {
               legion={legion}
               salve={salveNum}
               postsBySlot={postsBySlot}
-              onAdd={(slot, date) => openEditor(null, date.toISOString())}
               onEdit={(id) => openEditor(id)}
               isCurrent={current.salve === salveNum && legion === current.legion}
             />
@@ -97,14 +90,12 @@ function SalveBlock({
   legion,
   salve,
   postsBySlot,
-  onAdd,
   onEdit,
   isCurrent,
 }: {
   legion: number;
   salve: 1 | 2 | 3;
   postsBySlot: Map<string, Post>;
-  onAdd: (slot: WeekSlot, date: Date) => void;
   onEdit: (id: string) => void;
   isCurrent: boolean;
 }) {
@@ -130,7 +121,6 @@ function SalveBlock({
                 slot={slot}
                 expectedType={expectedType}
                 post={post}
-                onAdd={() => onAdd(slot, getDateForSlot(legion, salve, slot))}
                 onEdit={() => post && onEdit(post.id)}
               />
             );
@@ -145,13 +135,11 @@ function SlotCell({
   slot,
   expectedType,
   post,
-  onAdd,
   onEdit,
 }: {
   slot: WeekSlot;
   expectedType: import("@/lib/types").ContentType;
   post: Post | undefined;
-  onAdd: () => void;
   onEdit: () => void;
 }) {
   const slotInfo = WEEK_SLOTS[slot];
@@ -159,17 +147,14 @@ function SlotCell({
 
   if (!post) {
     return (
-      <button
-        onClick={onAdd}
-        className="text-left rounded-lg border border-dashed border-border hover:border-foreground/30 hover:bg-accent/30 transition-colors p-3 group min-h-[110px] flex flex-col"
-      >
+      <div className="rounded-lg border border-dashed border-border p-3 min-h-[110px] flex flex-col bg-muted/20">
         <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-bold">{slotInfo.shortLabel}</p>
         <div className="flex items-center gap-1.5 mt-1.5">
           <span className={`size-2 rounded-full bg-${typeInfo.color}`} />
-          <span className="text-xs font-medium">{typeInfo.label}</span>
+          <span className="text-xs text-muted-foreground">{typeInfo.label}</span>
         </div>
-        <Plus className="size-4 mx-auto mt-auto text-muted-foreground group-hover:text-primary" />
-      </button>
+        <p className="text-[10px] text-muted-foreground/60 mt-auto pt-2">Vide</p>
+      </div>
     );
   }
 
