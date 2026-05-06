@@ -130,7 +130,7 @@ function SalveBlock({
           <p className="font-semibold text-sm">Semaine {salve}</p>
           <Badge variant="outline" className="text-[10px]">{filled}/5</Badge>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+        <div className="space-y-2">
           {WEEK_SLOTS_ORDER.map((slot) => {
             const expectedType = SALVE_PATTERNS[salve][slot];
             const post = postsBySlot.get(`${legion}-${salve}-${slot}`);
@@ -179,15 +179,24 @@ function SlotCell({
       <button
         type="button"
         onClick={onPickEmpty}
-        className="rounded-lg border border-dashed border-border p-3 min-h-[110px] flex flex-col bg-muted/20 text-left hover:border-foreground/40 hover:bg-accent/30 active:scale-[0.99] transition-all group"
+        className="w-full rounded-2xl border border-dashed border-border bg-muted/20 hover:border-foreground/40 hover:bg-accent/30 active:scale-[0.99] transition-all group flex items-center gap-3 p-3 text-left"
       >
-        <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-bold">{slotInfo.shortLabel}</p>
-        <div className="flex items-center gap-1.5 mt-1.5">
-          <span className={`size-2 rounded-full bg-${typeInfo.color}`} />
-          <span className="text-xs text-muted-foreground">{typeInfo.label}</span>
+        <div className="size-12 rounded-xl bg-muted/50 border border-dashed border-border flex items-center justify-center shrink-0 text-muted-foreground group-hover:text-foreground">
+          <Plus className="size-5" />
         </div>
-        <span className="mt-auto pt-2 inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground group-hover:text-foreground">
-          <Plus className="size-3" /> Choisir
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-bold">
+            {slotInfo.shortLabel}
+          </p>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <span className={`size-1.5 rounded-full bg-${typeInfo.color}`} />
+            <span className="text-xs text-muted-foreground">
+              {typeInfo.label}
+            </span>
+          </div>
+        </div>
+        <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground shrink-0">
+          Choisir
         </span>
       </button>
     );
@@ -197,7 +206,7 @@ function SlotCell({
   const inspi = post.inspi_status;
   const cardStyle = inspi ? STATE_CARD_STYLES[inspi] : "bg-card border-border";
 
-  // Bandeau d'état: visible d'un coup d'œil, plein largeur, en haut de la carte
+  // Bandeau d'état: hyper visible, plein largeur, en haut de la carte
   const stateBand: Record<InspiStatus, { bg: string; label: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }> }> = {
     TODO: { bg: "bg-sky-500", label: "À faire", icon: Circle },
     DOING: { bg: "bg-amber-500", label: "En cours", icon: CircleDashed },
@@ -211,12 +220,11 @@ function SlotCell({
       type="button"
       onClick={onEdit}
       className={cn(
-        "relative rounded-lg overflow-hidden border transition-all min-h-[110px] flex flex-col group text-left active:scale-[0.99]",
+        "w-full rounded-2xl overflow-hidden border transition-all flex flex-col text-left active:scale-[0.99]",
         cardStyle
       )}
     >
-      {/* BANDEAU D'ÉTAT — plein largeur, hyper visible.
-          Si pas d'état: bandeau gris discret "Aucun état". */}
+      {/* BANDEAU D'ÉTAT — plein largeur, hyper visible. */}
       {band && BandIcon ? (
         <div
           className={cn(
@@ -233,26 +241,44 @@ function SlotCell({
         </div>
       )}
 
-      <div className="flex-1 flex flex-col">
+      {/* CONTENU HORIZONTAL — thumb à gauche, texte à droite, plein largeur */}
+      <div className="flex items-center gap-3 p-3">
         {post.visual_url ? (
-          <div className="relative aspect-square bg-muted">
+          <div className="relative size-14 rounded-xl overflow-hidden bg-muted shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={post.visual_url}
               alt=""
               className="absolute inset-0 size-full object-cover"
-              onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")}
+              onError={(e) =>
+                ((e.currentTarget as HTMLImageElement).style.display = "none")
+              }
             />
-            <div className={cn("absolute top-1 left-1 size-2.5 rounded-full ring-2 ring-white/80", `bg-${typeForPost.color}`)} />
           </div>
         ) : (
-          <div className={cn("aspect-square flex items-center justify-center text-xs font-semibold", `bg-${typeForPost.color}/15 text-${typeForPost.color}`)}>
-            {FORMATS[post.format].label}
+          <div
+            className={cn(
+              "size-14 rounded-xl flex items-center justify-center text-[10px] font-semibold shrink-0",
+              `bg-${typeForPost.color}/15 text-${typeForPost.color}`
+            )}
+          >
+            {FORMATS[post.format].label.slice(0, 4)}
           </div>
         )}
-        <div className="p-2 flex-1 flex flex-col">
-          <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-bold">{slotInfo.shortLabel}</p>
-          <p className="text-xs font-medium line-clamp-2 mt-0.5">{post.title}</p>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 text-[10px] uppercase tracking-wide font-bold text-muted-foreground">
+            <span>{slotInfo.shortLabel}</span>
+            <span
+              className={cn("size-1.5 rounded-full", `bg-${typeForPost.color}`)}
+            />
+            <span className="text-muted-foreground/80 normal-case font-medium tracking-normal">
+              {typeForPost.label}
+            </span>
+          </div>
+          <p className="text-sm font-medium line-clamp-2 mt-0.5">
+            {post.title}
+          </p>
         </div>
       </div>
     </button>
