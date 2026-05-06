@@ -36,7 +36,7 @@ export function PoolOverview() {
   // État vide → message accueillant
   if (pool.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-border bg-card p-5 flex items-center gap-3">
+      <div className="rounded-[28px] border border-dashed border-border bg-card p-5 flex items-center gap-3">
         <div className="size-10 rounded-full bg-muted flex items-center justify-center shrink-0">
           <Inbox className="size-4 text-muted-foreground" />
         </div>
@@ -48,7 +48,7 @@ export function PoolOverview() {
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-3 shadow-sm">
+    <div className="rounded-[28px] border border-border bg-card p-4 sm:p-5 space-y-3 shadow-sm">
       {/* Header avec compteur + CTA Salve */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -80,7 +80,7 @@ export function PoolOverview() {
               key={post.id}
               type="button"
               onClick={() => openEditor(post.id)}
-              className="group relative aspect-square rounded-xl overflow-hidden bg-muted border border-border active:scale-[0.97] transition-transform"
+              className="group relative aspect-square rounded-2xl overflow-hidden bg-muted border border-border active:scale-[0.97] transition-transform"
               title={post.title}
             >
               {post.visual_url ? (
