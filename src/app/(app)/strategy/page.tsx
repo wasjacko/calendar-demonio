@@ -45,13 +45,13 @@ export default function StrategyPage() {
   }, [posts]);
 
   return (
-    <div className="p-3 sm:p-4 md:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div>
-          <h2 className="text-lg sm:text-xl font-bold">Légion {legion}</h2>
-          <p className="text-xs text-muted-foreground">3 salves × 5 créneaux = 15 posts</p>
+    <div className="px-4 sm:px-6 py-4 sm:py-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-lg sm:text-xl font-bold tracking-tight">Légion {legion}</h2>
+          <p className="text-xs text-muted-foreground">3 salves × 5 créneaux</p>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1 shrink-0">
           <Button variant="outline" size="sm" onClick={() => setLegion((l) => Math.max(1, l - 1))} disabled={legion === 1} className="size-9 px-0">
             <ChevronLeft className="size-4" />
           </Button>
@@ -59,8 +59,8 @@ export default function StrategyPage() {
             <ChevronRight className="size-4" />
           </Button>
           {legion !== current.legion && (
-            <Button variant="ghost" size="sm" onClick={() => setLegion(current.legion)} className="text-xs">
-              Salve courante
+            <Button variant="ghost" size="sm" onClick={() => setLegion(current.legion)} className="text-xs px-2 ml-1">
+              Aujourd&apos;hui
             </Button>
           )}
         </div>

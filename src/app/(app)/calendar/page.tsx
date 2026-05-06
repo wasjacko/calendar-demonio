@@ -3,7 +3,6 @@
 import * as React from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { KanbanWeek } from "@/components/calendar/kanban-week";
-import { CalendarToolbar } from "@/components/calendar/calendar-toolbar";
 import { useUIStore, useDataStore } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -22,8 +21,7 @@ function CalendarPageInner() {
   }, [params, openEditor, router]);
 
   return (
-    <div className="px-4 sm:px-6 py-5 max-w-7xl mx-auto">
-      <CalendarToolbar />
+    <div className="px-4 sm:px-6 py-4 sm:py-5 max-w-7xl mx-auto">
       {loading ? (
         <p className="text-center text-sm text-muted-foreground py-12">Chargement…</p>
       ) : (

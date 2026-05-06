@@ -2,13 +2,12 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
+  Home,
   Calendar,
-  LayoutDashboard,
   TrendingUp,
   Settings,
-  Plus,
   Sun,
   Moon,
   Monitor,
@@ -23,30 +22,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const navItems = [
-  { href: "/dashboard", label: "All For One", short: "AFO", icon: LayoutDashboard },
-  { href: "/calendar", label: "Semaine", short: "Sem.", icon: Calendar },
-  { href: "/strategy", label: "Salve", short: "Salve", icon: TrendingUp },
+  { href: "/dashboard", label: "All For One", short: "Home", icon: Home },
+  { href: "/calendar", label: "Salve", short: "Salve", icon: Calendar },
+  { href: "/strategy", label: "Légion", short: "Légion", icon: TrendingUp },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
   const { theme, setTheme } = useTheme();
 
   const currentItem = navItems.find((i) => pathname.startsWith(i.href));
   const pageTitle = currentItem?.label ?? (pathname.startsWith("/settings") ? "Réglages" : "Editorial");
-
-  const focusAddForm = () => {
-    if (pathname !== "/dashboard") router.push("/dashboard");
-    setTimeout(() => {
-      const el = document.getElementById("add-video");
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
-        const input = el.querySelector("input[type=url]") as HTMLInputElement | null;
-        input?.focus();
-      }
-    }, 200);
-  };
 
   return (
     <div className="flex min-h-svh">
@@ -54,7 +40,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <aside className="hidden md:flex flex-col w-60 border-r border-border bg-card shrink-0">
         <div className="flex h-16 items-center gap-3 px-5 border-b border-border">
           <div className="size-8 rounded-md bg-foreground flex items-center justify-center shrink-0">
-            <Calendar className="size-4 text-background" />
+            <Home className="size-4 text-background" />
           </div>
           <p className="text-sm font-semibold tracking-tight">Editorial</p>
         </div>
@@ -83,7 +69,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar — Minimal. Hidden on mobile /dashboard pour voir l'image de fond */}
+        {/* Top bar — masqué sur mobile /dashboard pour voir l'image de fond */}
         <header
           className={cn(
             "sticky top-0 z-30 h-14 sm:h-16 items-center gap-2 border-b border-border bg-background/85 backdrop-blur px-4 sm:px-6",
@@ -118,45 +104,34 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Main content */}
-        <main className="flex-1 overflow-auto pb-24 md:pb-0">{children}</main>
+        <main className="flex-1 overflow-auto pb-20 md:pb-0">{children}</main>
 
-        {/* Mobile bottom nav with central + */}
+        {/* Mobile bottom nav — 3 items, plus de + central */}
         <div
           className="md:hidden fixed left-0 right-0 bottom-0 z-30 bg-background/95 backdrop-blur border-t border-border"
           style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         >
-          <nav className="grid grid-cols-4 items-center h-16 max-w-md mx-auto">
-            <NavTab item={navItems[0]} active={pathname.startsWith(navItems[0].href)} />
-            <NavTab item={navItems[1]} active={pathname.startsWith(navItems[1].href)} />
-            <div className="flex items-center justify-center">
-              <button
-                onClick={focusAddForm}
-                className="size-12 rounded-full bg-foreground flex items-center justify-center shadow-lg active:scale-95 transition-transform -translate-y-2"
-                aria-label="Nouvelle vidéo"
-              >
-                <Plus className="size-5 text-background" strokeWidth={2.5} />
-              </button>
-            </div>
-            <NavTab item={navItems[2]} active={pathname.startsWith(navItems[2].href)} />
+          <nav className="grid grid-cols-3 items-center h-16 max-w-md mx-auto">
+            {navItems.map((item) => {
+              const active = pathname === item.href || pathname.startsWith(item.href + "/");
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-0.5 h-full transition-colors",
+                    active ? "text-foreground" : "text-muted-foreground"
+                  )}
+                >
+                  <Icon className="size-5" strokeWidth={active ? 2.25 : 1.75} />
+                  <span className={cn("text-[11px]", active && "font-semibold")}>{item.short}</span>
+                </Link>
+              );
+            })}
           </nav>
         </div>
       </div>
     </div>
-  );
-}
-
-function NavTab({ item, active }: { item: typeof navItems[number]; active: boolean }) {
-  const Icon = item.icon;
-  return (
-    <Link
-      href={item.href}
-      className={cn(
-        "flex flex-col items-center justify-center gap-0.5 h-full transition-colors",
-        active ? "text-foreground" : "text-muted-foreground"
-      )}
-    >
-      <Icon className="size-5" strokeWidth={active ? 2.25 : 1.75} />
-      <span className={cn("text-[10px]", active && "font-semibold")}>{item.short}</span>
-    </Link>
   );
 }

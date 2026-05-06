@@ -191,7 +191,7 @@ export function AddVideoForm() {
           {saving ? (
             <><Loader2 className="size-4 animate-spin" /> Ajout…</>
           ) : (
-            <><Check className="size-4" /> Ajouter au pool</>
+            <><Check className="size-4" /> Ajouter</>
           )}
         </Button>
         {(url || preview || category || notes) && !saving && (

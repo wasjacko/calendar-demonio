@@ -109,7 +109,7 @@ export function KanbanWeek() {
             const filled = dayPosts.length;
             const done = dayPosts.filter((p) => p.status === "PUBLISHED").length;
             return (
-              <div key={day.key} className="w-72 sm:w-64 shrink-0 snap-start">
+              <div key={day.key} className="w-[calc(100vw-2.5rem)] sm:w-64 max-w-[20rem] shrink-0 snap-start">
                 <div className="flex items-baseline justify-between px-1 mb-3">
                   <p className="font-semibold tracking-tight">{day.label}</p>
                   {filled > 0 ? (
