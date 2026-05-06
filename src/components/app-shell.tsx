@@ -3,23 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Home,
-  Calendar,
-  TrendingUp,
-  Settings,
-  Sun,
-  Moon,
-  Monitor,
-} from "lucide-react";
+import { Home, Calendar, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useTheme } from "@/components/theme-provider";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 const navItems = [
   { href: "/dashboard", label: "All For One", short: "Home", icon: Home },
@@ -29,10 +14,9 @@ const navItems = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
 
   const currentItem = navItems.find((i) => pathname.startsWith(i.href));
-  const pageTitle = currentItem?.label ?? (pathname.startsWith("/settings") ? "Réglages" : "Editorial");
+  const pageTitle = currentItem?.label ?? "Editorial";
 
   return (
     <div className="flex min-h-svh">
@@ -69,44 +53,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar — masqué sur mobile /dashboard pour voir l'image de fond */}
+        {/* Top bar — masqué sur mobile /dashboard. Sur les autres pages: juste le titre */}
         <header
           className={cn(
             "sticky top-0 z-30 h-14 sm:h-16 items-center gap-2 border-b border-border bg-background/85 backdrop-blur px-4 sm:px-6",
             pathname === "/dashboard" ? "hidden md:flex" : "flex"
           )}
         >
-          <h1 className="text-base sm:text-lg font-semibold tracking-tight truncate flex-1">{pageTitle}</h1>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                className="size-9 rounded-md flex items-center justify-center hover:bg-accent transition-colors"
-                aria-label="Thème"
-              >
-                {theme === "dark" ? <Moon className="size-4" /> : theme === "light" ? <Sun className="size-4" /> : <Monitor className="size-4" />}
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setTheme("light")}><Sun className="size-4" /> Clair</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("dark")}><Moon className="size-4" /> Sombre</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("system")}><Monitor className="size-4" /> Système</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Link
-            href="/settings"
-            className="size-9 rounded-md flex items-center justify-center hover:bg-accent transition-colors"
-            aria-label="Réglages"
-          >
-            <Settings className="size-4" />
-          </Link>
+          <h1 className="text-base sm:text-lg font-semibold tracking-tight truncate flex-1">
+            {pageTitle}
+          </h1>
         </header>
 
         {/* Main content */}
         <main className="flex-1 overflow-auto pb-20 md:pb-0">{children}</main>
 
-        {/* Mobile bottom nav — 3 items, plus de + central */}
+        {/* Mobile bottom nav — 3 items */}
         <div
           className="md:hidden fixed left-0 right-0 bottom-0 z-30 bg-background/95 backdrop-blur border-t border-border"
           style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
@@ -125,7 +87,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   )}
                 >
                   <Icon className="size-5" strokeWidth={active ? 2.25 : 1.75} />
-                  <span className={cn("text-[11px]", active && "font-semibold")}>{item.short}</span>
+                  <span className={cn("text-[11px]", active && "font-semibold")}>
+                    {item.short}
+                  </span>
                 </Link>
               );
             })}
