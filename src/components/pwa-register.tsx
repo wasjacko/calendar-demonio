@@ -20,15 +20,16 @@ export function PWARegister() {
     const register = async () => {
       try {
         const registration = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+        // Vérifier les mises à jour à chaque ouverture/focus
+        registration.update().catch(() => {});
+
         registration.addEventListener("updatefound", () => {
           const newSW = registration.installing;
           if (!newSW) return;
           newSW.addEventListener("statechange", () => {
             if (newSW.state === "installed" && navigator.serviceWorker.controller) {
-              toast.message("Mise à jour disponible", {
-                description: "Recharge la page pour profiter des améliorations.",
-                action: { label: "Recharger", onClick: () => window.location.reload() },
-              });
+              // Auto-reload pour que la nouvelle UI prenne le relais immédiatement
+              window.location.reload();
             }
           });
         });
@@ -39,6 +40,22 @@ export function PWARegister() {
 
     register();
 
+    // Quand le SW envoie SW_UPDATED, on reload pour récupérer la nouvelle UI
+    const onMessage = (e: MessageEvent) => {
+      if (e.data?.type === "SW_UPDATED") {
+        window.location.reload();
+      }
+    };
+    navigator.serviceWorker.addEventListener("message", onMessage);
+
+    // Forcer un check de mise à jour quand l'onglet redevient visible
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") {
+        navigator.serviceWorker.getRegistration().then((reg) => reg?.update().catch(() => {}));
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
     const handler = (e: Event) => {
       e.preventDefault();
       setInstallPrompt(e as BeforeInstallPromptEvent);
@@ -46,7 +63,11 @@ export function PWARegister() {
       if (!dismissed) setShowInstall(true);
     };
     window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      navigator.serviceWorker.removeEventListener("message", onMessage);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, []);
 
   const handleInstall = async () => {

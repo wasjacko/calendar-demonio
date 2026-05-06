@@ -1,8 +1,8 @@
 // Service Worker — Editorial Calendar PWA
 // Push notifications + offline cache + background sync
 
-const CACHE_NAME = "editorial-v2";
-const RUNTIME_CACHE = "editorial-runtime-v2";
+const CACHE_NAME = "editorial-v3";
+const RUNTIME_CACHE = "editorial-runtime-v3";
 
 const STATIC_ASSETS = [
   "/",
@@ -30,6 +30,13 @@ self.addEventListener("activate", (event) => {
         Promise.all(keys.filter((k) => k !== CACHE_NAME && k !== RUNTIME_CACHE).map((k) => caches.delete(k)))
       )
       .then(() => self.clients.claim())
+      .then(async () => {
+        // Force tous les clients ouverts à recharger pour récupérer la nouvelle UI
+        const clients = await self.clients.matchAll({ type: "window" });
+        clients.forEach((client) => {
+          client.postMessage({ type: "SW_UPDATED" });
+        });
+      })
   );
 });
 
