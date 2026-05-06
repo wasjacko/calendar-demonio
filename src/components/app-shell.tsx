@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "All For One", short: "Home", icon: Home },
-  { href: "/calendar", label: "Salve", short: "Salve", icon: Calendar },
   { href: "/strategy", label: "Légion", short: "Légion", icon: TrendingUp },
+  { href: "/calendar", label: "Salve", short: "Salve", icon: Calendar },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
