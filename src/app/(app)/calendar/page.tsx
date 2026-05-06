@@ -21,7 +21,10 @@ function CalendarPageInner() {
   }, [params, openEditor, router]);
 
   return (
-    <div className="px-4 sm:px-6 pt-10 sm:pt-12 pb-10 sm:pb-12 max-w-3xl mx-auto">
+    <div
+      className="px-4 sm:px-6 pb-10 sm:pb-12 max-w-3xl mx-auto"
+      style={{ paddingTop: "calc(2.5rem + env(safe-area-inset-top))" }}
+    >
       {loading ? (
         <p className="text-center text-sm text-muted-foreground py-12">Chargement…</p>
       ) : (
