@@ -25,7 +25,7 @@ import {
 const navItems = [
   { href: "/dashboard", label: "All For One", short: "AFO", icon: LayoutDashboard },
   { href: "/calendar", label: "Semaine", short: "Sem.", icon: Calendar },
-  { href: "/strategy", label: "Stratégie", short: "Plan", icon: TrendingUp },
+  { href: "/strategy", label: "Salve", short: "Salve", icon: TrendingUp },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
