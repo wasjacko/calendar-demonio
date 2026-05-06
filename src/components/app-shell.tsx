@@ -3,13 +3,13 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Calendar, TrendingUp } from "lucide-react";
+import { Home, Calendar, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "All For One", short: "Home", icon: Home },
-  { href: "/strategy", label: "Légion", short: "Légion", icon: TrendingUp },
-  { href: "/calendar", label: "Salve", short: "Salve", icon: Calendar },
+  { href: "/strategy", label: "Salve", short: "Salve", icon: Calendar },
+  { href: "/calendar", label: "KPI", short: "KPI", icon: BarChart3 },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -53,14 +53,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar — masqué sur mobile /dashboard et /calendar (Salve).
-            Le titre est redondant avec la bottom nav. */}
+        {/* Top bar — masqué uniquement sur /dashboard (home immersive avec
+            l'image Garou). Les autres pages affichent leur titre. */}
         <header
           className={cn(
             "sticky top-0 z-30 items-center gap-2 border-b border-border bg-background/85 backdrop-blur px-4 sm:px-6",
-            pathname === "/dashboard" || pathname === "/calendar"
-              ? "hidden md:flex"
-              : "flex"
+            pathname === "/dashboard" ? "hidden md:flex" : "flex"
           )}
           style={{
             paddingTop: "env(safe-area-inset-top)",

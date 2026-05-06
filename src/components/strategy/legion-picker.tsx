@@ -128,7 +128,7 @@ export function LegionPicker({
   };
 
   const targetLabel = target
-    ? `Légion ${target.legion} · Salve ${target.salve} · ${WEEK_SLOTS[target.slot].shortLabel}`
+    ? `Salve ${target.legion} · Semaine ${target.salve} · ${WEEK_SLOTS[target.slot].shortLabel}`
     : "";
 
   return (

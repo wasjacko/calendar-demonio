@@ -69,8 +69,8 @@ export default function StrategyPage() {
     <div className="px-4 sm:px-6 pt-10 sm:pt-12 pb-10 sm:pb-12 max-w-7xl mx-auto space-y-6 sm:space-y-8">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <h2 className="text-lg sm:text-xl font-bold tracking-tight">Légion {legion}</h2>
-          <p className="text-xs text-muted-foreground">3 salves × 5 créneaux</p>
+          <h2 className="text-lg sm:text-xl font-bold tracking-tight">Salve {legion}</h2>
+          <p className="text-xs text-muted-foreground">3 semaines × 5 créneaux</p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <Button variant="outline" size="sm" onClick={() => setLegion((l) => Math.max(1, l - 1))} disabled={legion === 1} className="size-9 px-0">
@@ -135,7 +135,7 @@ function SalveBlock({
     <Card>
       <CardContent className="p-3 sm:p-4">
         <div className="flex items-center justify-between mb-3">
-          <p className="font-semibold text-sm">Salve {salve}</p>
+          <p className="font-semibold text-sm">Semaine {salve}</p>
           <Badge variant="outline" className="text-[10px]">{filled}/5</Badge>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
