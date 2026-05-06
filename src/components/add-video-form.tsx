@@ -130,7 +130,7 @@ export function AddVideoForm() {
   return (
     <div
       id="add-video"
-      className="rounded-2xl border border-border bg-card/95 backdrop-blur-md p-4 sm:p-5 space-y-3 shadow-sm"
+      className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-3 shadow-sm"
     >
       {/* Titre clair */}
       <div className="flex items-baseline justify-between">
