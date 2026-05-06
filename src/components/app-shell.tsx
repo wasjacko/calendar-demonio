@@ -3,22 +3,14 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Calendar, BarChart3, type LucideIcon } from "lucide-react";
+import { Home, Calendar, BarChart3, Archive } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type NavItem = {
-  href: string;
-  label: string;
-  short: string;
-  icon?: LucideIcon;
-  emoji?: string;
-};
-
-const navItems: NavItem[] = [
+const navItems = [
   { href: "/dashboard", label: "All For One", short: "Home", icon: Home },
   { href: "/strategy", label: "Salve", short: "Salve", icon: Calendar },
   { href: "/calendar", label: "KPI", short: "KPI", icon: BarChart3 },
-  { href: "/stockage", label: "Stockage", short: "Stock", emoji: "💧" },
+  { href: "/stockage", label: "Stockage", short: "Stock", icon: Archive },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -53,11 +45,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     : "text-muted-foreground hover:bg-accent hover:text-foreground"
                 )}
               >
-                {item.emoji ? (
-                  <span className="text-base leading-none shrink-0">{item.emoji}</span>
-                ) : Icon ? (
-                  <Icon className="size-4 shrink-0" />
-                ) : null}
+                <Icon className="size-4 shrink-0" />
                 <span>{item.label}</span>
               </Link>
             );
@@ -114,11 +102,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    {item.emoji ? (
-                      <span className="text-lg leading-none">{item.emoji}</span>
-                    ) : Icon ? (
-                      <Icon className="size-5" strokeWidth={active ? 2.25 : 1.75} />
-                    ) : null}
+                    <Icon className="size-5" strokeWidth={active ? 2.25 : 1.75} />
                     <span className={cn("text-[10px]", active && "font-semibold")}>
                       {item.short}
                     </span>
