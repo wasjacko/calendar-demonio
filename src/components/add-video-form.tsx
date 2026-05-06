@@ -228,18 +228,18 @@ export function AddVideoForm() {
                   type="button"
                   onClick={() => setCategory(isActive ? null : t)}
                   className={cn(
-                    "px-3 py-2 rounded-full text-xs font-medium transition-all flex items-center gap-1.5",
+                    "px-3 py-2 rounded-full text-xs transition-all flex items-center gap-1.5 border",
                     isActive
-                      ? `bg-${CONTENT_TYPES[t].color} text-white`
-                      : "bg-muted/50 hover:bg-accent text-foreground"
+                      ? "bg-foreground text-background font-semibold border-foreground shadow-md scale-[1.02]"
+                      : "bg-muted/50 text-foreground font-medium border-transparent hover:bg-accent"
                   )}
                 >
+                  {isActive && <Check className="size-3 -ml-0.5" strokeWidth={3} />}
                   <span
                     className={cn(
                       "size-1.5 rounded-full",
-                      isActive
-                        ? "bg-white/80"
-                        : `bg-${CONTENT_TYPES[t].color}`
+                      `bg-${CONTENT_TYPES[t].color}`,
+                      isActive && "ring-2 ring-background"
                     )}
                   />
                   {CONTENT_TYPES[t].label}
