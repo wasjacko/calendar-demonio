@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LegionPicker } from "@/components/strategy/legion-picker";
 import { StateDialog } from "@/components/strategy/state-dialog";
+import { CopyButton } from "@/components/copy-button";
 import { useCurrentSalve } from "@/lib/use-current-salve";
 import {
   CONTENT_TYPES,
@@ -236,11 +237,9 @@ function SlotCell({
   const BandIcon = band?.icon;
 
   return (
-    <button
-      type="button"
-      onClick={onEdit}
+    <div
       className={cn(
-        "w-full rounded-2xl overflow-hidden border transition-all flex flex-col text-left active:scale-[0.99]",
+        "relative w-full rounded-2xl overflow-hidden border transition-all flex flex-col",
         cardStyle
       )}
     >
@@ -261,47 +260,62 @@ function SlotCell({
         </div>
       )}
 
-      {/* CONTENU HORIZONTAL — thumb à gauche, texte à droite, plein largeur */}
+      {/* CONTENU HORIZONTAL — thumb à gauche, texte au milieu, copie à droite */}
       <div className="flex items-center gap-3 p-3">
-        {post.visual_url ? (
-          <div className="relative size-14 rounded-xl overflow-hidden bg-muted shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={post.visual_url}
-              alt=""
-              className="absolute inset-0 size-full object-cover"
-              onError={(e) =>
-                ((e.currentTarget as HTMLImageElement).style.display = "none")
-              }
-            />
-          </div>
-        ) : (
-          <div
-            className={cn(
-              "size-14 rounded-xl flex items-center justify-center text-[10px] font-semibold shrink-0",
-              `bg-${typeForPost.color}/15 text-${typeForPost.color}`
-            )}
-          >
-            {FORMATS[post.format].label.slice(0, 4)}
-          </div>
-        )}
+        <button
+          type="button"
+          onClick={onEdit}
+          className="flex items-center gap-3 flex-1 min-w-0 text-left active:scale-[0.99] transition-transform"
+        >
+          {post.visual_url ? (
+            <div className="relative size-14 rounded-xl overflow-hidden bg-muted shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={post.visual_url}
+                alt=""
+                className="absolute inset-0 size-full object-cover"
+                onError={(e) =>
+                  ((e.currentTarget as HTMLImageElement).style.display = "none")
+                }
+              />
+            </div>
+          ) : (
+            <div
+              className={cn(
+                "size-14 rounded-xl flex items-center justify-center text-[10px] font-semibold shrink-0",
+                `bg-${typeForPost.color}/15 text-${typeForPost.color}`
+              )}
+            >
+              {FORMATS[post.format].label.slice(0, 4)}
+            </div>
+          )}
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 text-[10px] uppercase tracking-wide font-bold text-muted-foreground">
-            <span>{slotInfo.shortLabel}</span>
-            <span
-              className={cn("size-1.5 rounded-full", `bg-${typeForPost.color}`)}
-            />
-            <span className="text-muted-foreground/80 normal-case font-medium tracking-normal">
-              {typeForPost.label}
-            </span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-wide font-bold text-muted-foreground">
+              <span>{slotInfo.shortLabel}</span>
+              <span
+                className={cn("size-1.5 rounded-full", `bg-${typeForPost.color}`)}
+              />
+              <span className="text-muted-foreground/80 normal-case font-medium tracking-normal">
+                {typeForPost.label}
+              </span>
+            </div>
+            <p className="text-sm font-medium line-clamp-2 mt-0.5">
+              {post.title}
+            </p>
           </div>
-          <p className="text-sm font-medium line-clamp-2 mt-0.5">
-            {post.title}
-          </p>
-        </div>
+        </button>
+
+        {/* Bouton "Copier le lien" — tap dédié, indépendant du tap card */}
+        {post.source_url && (
+          <CopyButton
+            value={post.source_url}
+            className="size-10 rounded-full border border-border/60 bg-background/60 hover:bg-background hover:border-foreground/30 shrink-0"
+            size="md"
+          />
+        )}
       </div>
-    </button>
+    </div>
   );
 }
 
