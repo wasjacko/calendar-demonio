@@ -1,8 +1,21 @@
-export type ContentType = "EXPERT" | "AUDIENCE" | "ATTACHEMENT" | "VALEUR" | "AUDIENCE_VALEUR";
+// Stratégie cycle 3 Salves — Attraction → Qualification → Conversion
+// 5 reels / semaine · 15 reels / cycle · jours: Lun · Mar · Mer · Ven · Sam
+export type ContentType =
+  | "DAY_IN_LIFE"
+  | "COMMENT_REPLY"
+  | "TUTO"
+  | "PROCESS"
+  | "B_ROLL"
+  | "SPICY_OPINION"
+  | "CTA_SKOOL";
+
 export type ContentFormat = "REEL" | "POST" | "CAROUSEL" | "STORY" | "LIVE";
 export type ContentStatus = "IDEA" | "DRAFT" | "SCHEDULED" | "PUBLISHED" | "MISSED";
-export type WeekSlot = "MON_0631" | "TUE_1104" | "WED_1217" | "FRI_1600" | "SUN_0500";
+export type WeekSlot = "MON_0600" | "TUE_0600" | "WED_1100" | "FRI_1500" | "SAT_0600";
 export type InspiStatus = "TODO" | "DOING" | "DONE";
+
+// Salve = mission funnel (les 3 phases du cycle 3 semaines)
+export type SalveStage = "ATTRACTION" | "QUALIFICATION" | "CONVERSION";
 
 export interface OgData {
   url: string;
@@ -58,7 +71,6 @@ export interface Post {
   updated_at: string;
 }
 
-// Métadonnées des états inspi pour la vue Légion (couleur de carte + label)
 export const INSPI_STATUSES: Record<InspiStatus, { label: string; short: string }> = {
   TODO: { label: "À faire", short: "À faire" },
   DOING: { label: "En cours", short: "En cours" },
@@ -93,16 +105,56 @@ export interface Reminder {
   created_at: string;
 }
 
-// Pas d'emoji — juste label + couleur. Les composants UI utilisent des icônes Lucide.
+// Types de poste — nommés "alters" dans l'UI (synonyme: format de poste)
+// Le label est la version concrète du contenu, l'astuce vient en complément.
 export const CONTENT_TYPES: Record<ContentType, {
   label: string;
+  short: string;
   color: string;
+  tip: string;
 }> = {
-  EXPERT: { label: "Expert", color: "expert" },
-  AUDIENCE: { label: "Audience", color: "audience" },
-  ATTACHEMENT: { label: "Attachement", color: "attachement" },
-  VALEUR: { label: "Valeur", color: "valeur" },
-  AUDIENCE_VALEUR: { label: "Audience + Valeur", color: "audience-valeur" },
+  DAY_IN_LIFE: {
+    label: "Day in the Life",
+    short: "Day in the Life",
+    color: "day-in-life",
+    tip: "Pote / élément bizarre en arrière-plan = rétention par WTF visuel.",
+  },
+  COMMENT_REPLY: {
+    label: "Réponse commentaire",
+    short: "Rép. commentaire",
+    color: "comment-reply",
+    tip: "Attitude comme Keo + regarde 10 Reels de Keo avant de tourner.",
+  },
+  TUTO: {
+    label: "Tuto",
+    short: "Tuto",
+    color: "tuto",
+    tip: "Sélection design vraiment waw + clair · max 40 sec.",
+  },
+  PROCESS: {
+    label: "Process / Mon taff",
+    short: "Process",
+    color: "process",
+    tip: "« Commente [mot] » → ManyChat envoie le fichier en DM (boost commentaires + capture leads).",
+  },
+  B_ROLL: {
+    label: "B-roll only",
+    short: "B-roll",
+    color: "b-roll",
+    tip: "Phrase impactante mais simple à lire · digestible en 2 sec.",
+  },
+  SPICY_OPINION: {
+    label: "Avis clivant",
+    short: "Avis clivant",
+    color: "spicy-opinion",
+    tip: "Être clivant + bons arguments suffit à percer.",
+  },
+  CTA_SKOOL: {
+    label: "CTA Skool",
+    short: "CTA Skool",
+    color: "cta-skool",
+    tip: "On te voit, mais le client parle en premier (social proof avant pitch).",
+  },
 };
 
 export const FORMATS: Record<ContentFormat, { label: string }> = {
@@ -121,50 +173,117 @@ export const STATUSES: Record<ContentStatus, { label: string; color: string }> =
   MISSED: { label: "Manqué", color: "status-missed" },
 };
 
+// Créneaux de la semaine (5 Reels — Lun · Mar · Mer · Ven · Sam)
 export const WEEK_SLOTS: Record<WeekSlot, {
   label: string;
   shortLabel: string;
-  dayIdx: number; // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 5=Fri
+  dayIdx: number; // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 5=Fri, 6=Sat
   hour: number;
   minute: number;
+  rationale: string;
 }> = {
-  MON_0631: { label: "Lundi 06:31", shortLabel: "Lun 06:31", dayIdx: 1, hour: 6, minute: 31 },
-  TUE_1104: { label: "Mardi 11:04", shortLabel: "Mar 11:04", dayIdx: 2, hour: 11, minute: 4 },
-  WED_1217: { label: "Mercredi 12:17", shortLabel: "Mer 12:17", dayIdx: 3, hour: 12, minute: 17 },
-  FRI_1600: { label: "Vendredi 16:00", shortLabel: "Ven 16:00", dayIdx: 5, hour: 16, minute: 0 },
-  SUN_0500: { label: "Dimanche 05:00", shortLabel: "Dim 05:00", dayIdx: 0, hour: 5, minute: 0 },
+  MON_0600: {
+    label: "Lundi 06:00",
+    shortLabel: "Lun 06h",
+    dayIdx: 1, hour: 6, minute: 0,
+    rationale: "Commute matinal · scroll au lit / café · faible compétition · ouverture algo",
+  },
+  TUE_0600: {
+    label: "Mardi 06:00",
+    shortLabel: "Mar 06h",
+    dayIdx: 2, hour: 6, minute: 0,
+    rationale: "Commute matinal · scroll au lit / café · faible compétition · ouverture algo",
+  },
+  WED_1100: {
+    label: "Mercredi 11:00",
+    shortLabel: "Mer 11h",
+    dayIdx: 3, hour: 11, minute: 0,
+    rationale: "Avant pause déjeuner · pic de scroll productif",
+  },
+  FRI_1500: {
+    label: "Vendredi 15:00",
+    shortLabel: "Ven 15h",
+    dayIdx: 5, hour: 15, minute: 0,
+    rationale: "Creux fin de journée bureau · mode détente · débats fin de semaine",
+  },
+  SAT_0600: {
+    label: "Samedi 06:00",
+    shortLabel: "Sam 06h",
+    dayIdx: 6, hour: 6, minute: 0,
+    rationale: "Weekend matin · scroll long · mode bookmark · conversion produit",
+  },
 };
 
-export const WEEK_SLOTS_ORDER: WeekSlot[] = ["MON_0631", "TUE_1104", "WED_1217", "FRI_1600", "SUN_0500"];
+export const WEEK_SLOTS_ORDER: WeekSlot[] = [
+  "MON_0600",
+  "TUE_0600",
+  "WED_1100",
+  "FRI_1500",
+  "SAT_0600",
+];
 
-// Pattern Bara : type recommandé pour chaque slot d'une salve
-// AUDIENCE_VALEUR = format hybride qui donne de la valeur ET fait du volume
-export const SALVE_PATTERNS: Record<1 | 2 | 3, Record<WeekSlot, ContentType>> = {
+// Métadonnées des Salves (mission par phase du funnel)
+export const SALVE_STAGES: Record<1 | 2 | 3, {
+  stage: SalveStage;
+  name: string;
+  mission: string;
+  pitchRule: string;
+}> = {
   1: {
-    MON_0631: "ATTACHEMENT",
-    TUE_1104: "EXPERT",
-    WED_1217: "ATTACHEMENT",
-    FRI_1600: "AUDIENCE_VALEUR",
-    SUN_0500: "ATTACHEMENT",
+    stage: "ATTRACTION",
+    name: "Attraction",
+    mission: "Maximum de portée, séduction, 0 pitch.",
+    pitchRule: "0 pitch",
   },
   2: {
-    MON_0631: "AUDIENCE",
-    TUE_1104: "EXPERT",
-    WED_1217: "ATTACHEMENT",
-    FRI_1600: "AUDIENCE_VALEUR",
-    SUN_0500: "ATTACHEMENT",
+    stage: "QUALIFICATION",
+    name: "Qualification",
+    mission: "Positionnement fort, premier bridge produit.",
+    pitchRule: "1 pitch déguisé",
   },
   3: {
-    MON_0631: "AUDIENCE",
-    TUE_1104: "EXPERT",
-    WED_1217: "ATTACHEMENT",
-    FRI_1600: "AUDIENCE_VALEUR",
-    SUN_0500: "ATTACHEMENT",
+    stage: "CONVERSION",
+    name: "Conversion",
+    mission: "Bridge PUCK, closing du cycle.",
+    pitchRule: "1 pitch déguisé",
   },
 };
 
-// Calcule la date d'un slot donné pour une légion/salve donnée.
-// Utilise lundi 4 mai 2026 comme origine (Légion 1 Salve 1 = cette semaine-là).
+// Pattern par Salve : type de post recommandé pour chaque créneau
+// + note optionnelle (variante du format pour cette Salve précise)
+export interface SalveSlot {
+  type: ContentType;
+  note?: string;
+}
+
+export const SALVE_PATTERNS: Record<1 | 2 | 3, Record<WeekSlot, SalveSlot>> = {
+  // SALVE 1 — ATTRACTION (0 pitch)
+  1: {
+    MON_0600: { type: "DAY_IN_LIFE" },
+    TUE_0600: { type: "COMMENT_REPLY" },
+    WED_1100: { type: "TUTO" },
+    FRI_1500: { type: "B_ROLL" },
+    SAT_0600: { type: "PROCESS" },
+  },
+  // SALVE 2 — QUALIFICATION (1 pitch déguisé)
+  2: {
+    MON_0600: { type: "DAY_IN_LIFE" },
+    TUE_0600: { type: "COMMENT_REPLY" },
+    WED_1100: { type: "PROCESS" },
+    FRI_1500: { type: "SPICY_OPINION" },
+    SAT_0600: { type: "CTA_SKOOL", note: "appel client live" },
+  },
+  // SALVE 3 — CONVERSION (1 pitch déguisé)
+  3: {
+    MON_0600: { type: "DAY_IN_LIFE" },
+    TUE_0600: { type: "COMMENT_REPLY" },
+    WED_1100: { type: "TUTO" },
+    FRI_1500: { type: "PROCESS" },
+    SAT_0600: { type: "CTA_SKOOL", note: "session coaching" },
+  },
+};
+
+// Origine du cycle (Lundi 4 mai 2026 = Légion 1, Salve 1, Lundi)
 const ORIGIN = new Date("2026-05-04T00:00:00.000Z").getTime();
 
 export function getDateForSlot(legion: number, salve: 1 | 2 | 3, slot: WeekSlot): Date {

@@ -30,17 +30,21 @@
   --ring: oklch(0.4 0 0);
   --radius: 1rem;                          /* arrondi plus joyful */
 
-  /* Content types: very desaturated, subtle hint */
-  --expert: oklch(0.42 0.04 220);
-  --expert-foreground: oklch(0.99 0 0);
-  --audience: oklch(0.42 0.06 295);
-  --audience-foreground: oklch(0.99 0 0);
-  --attachement: oklch(0.5 0.08 30);
-  --attachement-foreground: oklch(0.99 0 0);
-  --valeur: oklch(0.45 0.06 145);
-  --valeur-foreground: oklch(0.99 0 0);
-  --audience-valeur: oklch(0.42 0.05 250);
-  --audience-valeur-foreground: oklch(0.99 0 0);
+  /* Types de poste — couleurs distinctes mais cohérentes (palette Notion) */
+  --day-in-life: oklch(0.55 0.12 295);    /* violet — lifestyle */
+  --day-in-life-foreground: oklch(0.99 0 0);
+  --comment-reply: oklch(0.5 0.12 230);   /* bleu — interaction */
+  --comment-reply-foreground: oklch(0.99 0 0);
+  --tuto: oklch(0.6 0.14 50);             /* orange — instructif */
+  --tuto-foreground: oklch(0.99 0 0);
+  --process: oklch(0.5 0.12 145);         /* vert — production */
+  --process-foreground: oklch(0.99 0 0);
+  --b-roll: oklch(0.45 0.02 250);         /* gris bleuté — atmosphérique */
+  --b-roll-foreground: oklch(0.99 0 0);
+  --spicy-opinion: oklch(0.55 0.18 25);   /* rouge — clivant */
+  --spicy-opinion-foreground: oklch(0.99 0 0);
+  --cta-skool: oklch(0.62 0.15 75);       /* doré — premium / CTA */
+  --cta-skool-foreground: oklch(0.99 0 0);
 
   --status-idea: oklch(0.6 0 0);
   --status-draft: oklch(0.55 0 0);
@@ -70,11 +74,13 @@
   --input: oklch(0.24 0 0);
   --ring: oklch(0.7 0 0);
 
-  --expert: oklch(0.7 0.05 220);
-  --audience: oklch(0.7 0.07 295);
-  --attachement: oklch(0.72 0.1 30);
-  --valeur: oklch(0.72 0.07 145);
-  --audience-valeur: oklch(0.7 0.06 250);
+  --day-in-life: oklch(0.7 0.12 295);
+  --comment-reply: oklch(0.7 0.12 230);
+  --tuto: oklch(0.75 0.14 50);
+  --process: oklch(0.7 0.12 145);
+  --b-roll: oklch(0.65 0.02 250);
+  --spicy-opinion: oklch(0.7 0.18 25);
+  --cta-skool: oklch(0.75 0.15 75);
 }
 
 @theme inline {
@@ -102,16 +108,20 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  --color-expert: var(--expert);
-  --color-expert-foreground: var(--expert-foreground);
-  --color-audience: var(--audience);
-  --color-audience-foreground: var(--audience-foreground);
-  --color-attachement: var(--attachement);
-  --color-attachement-foreground: var(--attachement-foreground);
-  --color-valeur: var(--valeur);
-  --color-valeur-foreground: var(--valeur-foreground);
-  --color-audience-valeur: var(--audience-valeur);
-  --color-audience-valeur-foreground: var(--audience-valeur-foreground);
+  --color-day-in-life: var(--day-in-life);
+  --color-day-in-life-foreground: var(--day-in-life-foreground);
+  --color-comment-reply: var(--comment-reply);
+  --color-comment-reply-foreground: var(--comment-reply-foreground);
+  --color-tuto: var(--tuto);
+  --color-tuto-foreground: var(--tuto-foreground);
+  --color-process: var(--process);
+  --color-process-foreground: var(--process-foreground);
+  --color-b-roll: var(--b-roll);
+  --color-b-roll-foreground: var(--b-roll-foreground);
+  --color-spicy-opinion: var(--spicy-opinion);
+  --color-spicy-opinion-foreground: var(--spicy-opinion-foreground);
+  --color-cta-skool: var(--cta-skool);
+  --color-cta-skool-foreground: var(--cta-skool-foreground);
 
   --color-status-idea: var(--status-idea);
   --color-status-draft: var(--status-draft);
@@ -306,11 +316,13 @@
   box-shadow: none;
 }
 
-.fc-event-expert { background: var(--expert) !important; color: var(--expert-foreground) !important; }
-.fc-event-audience { background: var(--audience) !important; color: var(--audience-foreground) !important; }
-.fc-event-attachement { background: var(--attachement) !important; color: var(--attachement-foreground) !important; }
-.fc-event-valeur { background: var(--valeur) !important; color: var(--valeur-foreground) !important; }
-.fc-event-audience_valeur { background: var(--audience-valeur) !important; color: var(--audience-valeur-foreground) !important; }
+.fc-event-day_in_life { background: var(--day-in-life) !important; color: var(--day-in-life-foreground) !important; }
+.fc-event-comment_reply { background: var(--comment-reply) !important; color: var(--comment-reply-foreground) !important; }
+.fc-event-tuto { background: var(--tuto) !important; color: var(--tuto-foreground) !important; }
+.fc-event-process { background: var(--process) !important; color: var(--process-foreground) !important; }
+.fc-event-b_roll { background: var(--b-roll) !important; color: var(--b-roll-foreground) !important; }
+.fc-event-spicy_opinion { background: var(--spicy-opinion) !important; color: var(--spicy-opinion-foreground) !important; }
+.fc-event-cta_skool { background: var(--cta-skool) !important; color: var(--cta-skool-foreground) !important; }
 
 .fc .fc-event-with-image {
   padding: 0 !important;

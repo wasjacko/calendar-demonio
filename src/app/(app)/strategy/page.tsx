@@ -21,6 +21,7 @@ import {
   WEEK_SLOTS,
   WEEK_SLOTS_ORDER,
   SALVE_PATTERNS,
+  SALVE_STAGES,
   FORMATS,
   type Post,
   type WeekSlot,
@@ -58,7 +59,9 @@ export default function StrategyPage() {
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
           <h2 className="text-lg sm:text-xl font-bold tracking-tight">Salve {legion}</h2>
-          <p className="text-xs text-muted-foreground">3 semaines × 5 créneaux</p>
+          <p className="text-xs text-muted-foreground">
+            Cycle 21 jours · 15 Reels · Attraction → Qualification → Conversion
+          </p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <Button variant="outline" size="sm" onClick={() => setLegion((l) => Math.max(1, l - 1))} disabled={legion === 1} className="size-9 px-0">
@@ -122,23 +125,33 @@ function SalveBlock({
   onPickEmpty: (slot: WeekSlot) => void;
 }) {
   const filled = WEEK_SLOTS_ORDER.filter((s) => postsBySlot.has(`${legion}-${salve}-${s}`)).length;
+  const stage = SALVE_STAGES[salve];
 
   return (
     <Card>
       <CardContent className="p-3 sm:p-4">
-        <div className="flex items-center justify-between mb-3">
-          <p className="font-semibold text-sm">Semaine {salve}</p>
-          <Badge variant="outline" className="text-[10px]">{filled}/5</Badge>
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <div className="min-w-0">
+            <p className="font-semibold text-sm">
+              Semaine {salve}{" "}
+              <span className="font-normal text-muted-foreground">— {stage.name}</span>
+            </p>
+            <p className="text-[10px] text-muted-foreground/80 mt-0.5 line-clamp-1">
+              {stage.mission} <span className="font-medium">· {stage.pitchRule}</span>
+            </p>
+          </div>
+          <Badge variant="outline" className="text-[10px] shrink-0">{filled}/5</Badge>
         </div>
         <div className="space-y-2">
           {WEEK_SLOTS_ORDER.map((slot) => {
-            const expectedType = SALVE_PATTERNS[salve][slot];
+            const expectedSlot = SALVE_PATTERNS[salve][slot];
             const post = postsBySlot.get(`${legion}-${salve}-${slot}`);
             return (
               <SlotCell
                 key={slot}
                 slot={slot}
-                expectedType={expectedType}
+                expectedType={expectedSlot.type}
+                expectedNote={expectedSlot.note}
                 post={post}
                 onEdit={() => post && onEdit(post.id)}
                 onPickEmpty={() => onPickEmpty(slot)}
@@ -161,12 +174,14 @@ const STATE_CARD_STYLES: Record<InspiStatus, string> = {
 function SlotCell({
   slot,
   expectedType,
+  expectedNote,
   post,
   onEdit,
   onPickEmpty,
 }: {
   slot: WeekSlot;
   expectedType: import("@/lib/types").ContentType;
+  expectedNote?: string;
   post: Post | undefined;
   onEdit: () => void;
   onPickEmpty: () => void;
@@ -190,9 +205,14 @@ function SlotCell({
           </p>
           <div className="flex items-center gap-1.5 mt-0.5">
             <span className={`size-1.5 rounded-full bg-${typeInfo.color}`} />
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs font-medium text-foreground">
               {typeInfo.label}
             </span>
+            {expectedNote && (
+              <span className="text-[10px] text-muted-foreground italic">
+                · {expectedNote}
+              </span>
+            )}
           </div>
         </div>
         <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground shrink-0">
