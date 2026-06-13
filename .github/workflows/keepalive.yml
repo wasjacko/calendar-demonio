@@ -1,0 +1,36 @@
+name: Supabase Keep-Alive
+
+# Empêche le projet Supabase Free de se mettre en pause (pause après 7j
+# d'inactivité, suppression après ~90j de pause). On ping la base tous les
+# 2 jours pour la garder active en permanence. Indépendant de ton Mac.
+
+on:
+  schedule:
+    # Toutes les 2 jours à 11h00 UTC (largement sous le seuil de 7 jours)
+    - cron: "0 11 */2 * *"
+  workflow_dispatch: {} # bouton "Run workflow" manuel
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          echo "Ping de la base à $(date -u)"
+          # Requête triviale sur posts (compte uniquement) — garde la DB active
+          STATUS=$(curl -s -o /tmp/resp.txt -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/posts?select=id&limit=1" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY")
+          echo "HTTP $STATUS"
+          cat /tmp/resp.txt
+          # 200 = OK, 404 = table absente mais base vivante (OK aussi)
+          if [ "$STATUS" = "200" ] || [ "$STATUS" = "404" ]; then
+            echo "✓ Base active"
+            exit 0
+          fi
+          echo "✗ Base injoignable (HTTP $STATUS) — projet peut-être pausé/supprimé"
+          exit 1
