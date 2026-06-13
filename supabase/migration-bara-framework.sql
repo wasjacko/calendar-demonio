@@ -24,6 +24,8 @@ alter table posts
   add column if not exists inspi_from text;
 
 -- 4) Drop les anciennes colonnes funnel (si tu veux les garder pour migration douce, commente ces lignes)
+-- D'abord drop la vue obsolète qui dépend de funnel_stage (modèle TOFU/MOFU/BOFU abandonné)
+drop view if exists weekly_funnel_distribution cascade;
 alter table posts drop column if exists funnel_stage;
 alter table posts drop column if exists pillar;
 
