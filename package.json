@@ -8,6 +8,8 @@
     "start": "next start",
     "icons": "node scripts/generate-icons-from-png.mjs",
     "vapid": "node scripts/generate-vapid.mjs",
+    "backup": "node scripts/backup-supabase.mjs",
+    "restore": "node scripts/restore-supabase.mjs",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

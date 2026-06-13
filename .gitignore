@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Backups (hors repo, jamais committer les données)
+calendar-backups/
+*.backup
